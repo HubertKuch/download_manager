@@ -1,4 +1,4 @@
-package com.hubert.downloader.models;
+package com.hubert.downloader.domain;
 
 import lombok.*;
 import org.springframework.data.mongodb.core.mapping.Document;

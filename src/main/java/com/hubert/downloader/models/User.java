@@ -1,10 +1,12 @@
 package com.hubert.downloader.models;
 
+import com.hubert.downloader.domain.Transfer;
 import lombok.*;
-import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 import org.springframework.data.mongodb.core.mapping.MongoId;
+
+import java.util.List;
 
 @Getter
 @Setter
@@ -23,4 +25,6 @@ public class User {
     private String passwordHash;
     @Field
     private Transfer transfer;
+    @Field
+    private List<File> files = List.of();
 }
