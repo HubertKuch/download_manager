@@ -13,8 +13,8 @@ public class UserService {
 
     private final UserRepository repository;
 
-    public void saveUser(User user) {
-        repository.save(user);
+    public User saveUser(User user) {
+        return repository.save(user);
     }
 
     public List<User> getUsers() {
