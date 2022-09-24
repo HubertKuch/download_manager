@@ -14,7 +14,12 @@ public class Transfer {
     private InformationSize startTransfer;
 
     public void subtract(InformationSize informationSizeToSubtract) {
-        Float actualSize = transfer.size();
-        Float afterSubtraction = actualSize - informationSizeToSubtract.size();
+        Float actualTransferInBytes = transfer.parseTo(InformationUnit.BYTE).size();
+        Float actualFileSizeInBytes = informationSizeToSubtract.parseTo(InformationUnit.BYTE).size();
+
+        Float diff = actualTransferInBytes - actualFileSizeInBytes;
+        InformationSize diffInformationSize = new InformationSize(InformationUnit.BYTE, diff);
+
+        this.transfer = diffInformationSize.parseTo(transfer.unit());
     }
 }

@@ -1,6 +1,7 @@
 package com.hubert.downloader.controllers;
 
 import com.hubert.downloader.domain.InformationSize;
+import com.hubert.downloader.domain.InformationUnit;
 import com.hubert.downloader.domain.exceptions.UserCantDownloadFile;
 import com.hubert.downloader.models.File;
 import com.hubert.downloader.models.User;
@@ -18,11 +19,11 @@ public class FileController {
     private final FileService fileService;
     private final UserService userService;
 
-//    @PostMapping("/download/")
-//    public User downloadFile() throws UserCantDownloadFile {
-//        File file = new File("test", "testfile.txt", InformationSize.fromMegabit(5f));
-//        User user = userService.getUsers().get(0);
-//
-//        return fileService.downloadFile(user, file);
-//    }
+    @PostMapping("/download/")
+    public User downloadFile() throws UserCantDownloadFile {
+        File file = new File("test", "testfile.txt", new InformationSize(InformationUnit.MEGA_BYTE, 500F));
+        User user = userService.getUsers().get(0);
+
+        return fileService.downloadFile(user, file);
+    }
 }
