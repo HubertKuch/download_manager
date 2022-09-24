@@ -21,7 +21,7 @@ public record InformationSize(InformationUnit unit, Float size) {
 
         Collections.reverse(units);
 
-        for (InformationUnit unit : units) {
+        for (InformationUnit unit : units.subList(units.indexOf(unit), units.size()-1)) {
             if (unit.equals(toUnit)) break;
 
             sizeOf = sizeOf * 1024;
