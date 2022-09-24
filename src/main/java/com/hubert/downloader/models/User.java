@@ -27,4 +27,12 @@ public class User {
     private Transfer transfer;
     @Field
     private List<File> files = List.of();
+
+    public Float compareFileSizeWithUserTransfer(final File file) {
+        return transfer.getTransfer().size() - file.getSize().size();
+    }
+
+    public boolean isUserCanDownloadAFile(final File file) {
+        return compareFileSizeWithUserTransfer(file) > 0;
+    }
 }

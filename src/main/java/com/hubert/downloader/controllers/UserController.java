@@ -1,6 +1,7 @@
 package com.hubert.downloader.controllers;
 
 import com.hubert.downloader.models.User;
+import com.hubert.downloader.services.FileService;
 import com.hubert.downloader.services.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -13,9 +14,10 @@ import java.util.List;
 public class UserController {
 
     private final UserService userService;
+    private final FileService fileService;
 
     @GetMapping("/")
-    public List<User> testUser() {
+    public List<User> getUsers() {
         return userService.getUsers();
     }
 
