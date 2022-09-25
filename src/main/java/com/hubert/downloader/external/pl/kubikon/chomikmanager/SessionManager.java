@@ -1,4 +1,4 @@
-package com.hubert.downloader.external.pl.kubikon.chomikmanager;
+package pl.kubikon.shared;
 
 import com.hubert.downloader.external.pl.kubikon.shared.utils.Utils;
 import org.json.JSONObject;
@@ -29,12 +29,11 @@ public class SessionManager implements Serializable {
 	}
 
 	public static JSONObject getSessionData() {
-		File file = new File("sessiondata.json");
+		File file = Utils.getLocalTokenDataFile();
 		if (file.exists()) {
 			try (FileInputStream inputStream = new FileInputStream(file)) {
 				return new JSONObject(new String(inputStream.readAllBytes(), StandardCharsets.UTF_8));
 			} catch (Exception e) {
-				Utils.log(e);
 			}
 		}
 		return new JSONObject();
@@ -44,12 +43,10 @@ public class SessionManager implements Serializable {
 		try (FileOutputStream outputStream = new FileOutputStream(Utils.getLocalTokenDataFile())) {
 			outputStream.write(sessionData.toString().getBytes(StandardCharsets.UTF_8));
 		} catch (Exception e) {
-			Utils.log(e);
 		}
 	}
 
 	public static void clearLocalTokenData() {
-		Utils.log("clearLocalTokenData()");
 		setSessionData(new JSONObject());
 	}
 

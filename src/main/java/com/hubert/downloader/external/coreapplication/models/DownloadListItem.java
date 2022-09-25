@@ -1,10 +1,7 @@
 package com.hubert.downloader.external.coreapplication.models;
 
-import com.coreapplication.adapters.IconsAdapter;
-import com.coreapplication.enums.MediaType;
-import com.coreapplication.helpers.SearchResponseParser;
-import com.coreapplication.modelsgson.FilesFoldersResponse;
-import com.coreapplication.modelsgson.FolderDownloadChFile;
+import com.hubert.downloader.external.coreapplication.modelsgson.FilesFoldersResponse;
+import com.hubert.downloader.external.coreapplication.modelsgson.FolderDownloadChFile;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -61,7 +58,6 @@ public class DownloadListItem extends FileListItem {
 		this.mStreamingUrl = str5;
 		setFileSizeInBytes(convertFileSize(j2));
 		this.mHasPassword = false;
-		this.mFreeTransfer = bool.booleanValue();
 		setFileId(j);
 		setIconId(i);
 		m2311a(str2);
@@ -192,7 +188,6 @@ public class DownloadListItem extends FileListItem {
 	public void setFreeTransfer(boolean z) {
 		this.mFreeTransfer = z;
 	}
-
 	public static DownloadListItem fromFolderDownloadFile(FolderDownloadChFile folderDownloadFile) {
 		if (folderDownloadFile != null) {
 			DownloadListItem downloadListItem = new DownloadListItem();
@@ -201,22 +196,9 @@ public class DownloadListItem extends FileListItem {
 			String cleanFileExtension = "?";//StringHelper.getCleanFileExtension(folderDownloadFile.fileType);
 			downloadListItem.setMediaType(folderDownloadFile.mediaType);
 			downloadListItem.setFileExtension(cleanFileExtension);
-			if (downloadListItem.mediaType == MediaType.MUSIC) {
-				downloadListItem.iconId = IconsAdapter.getIconId(IconsAdapter.ICON_TYPE_MUSIC);
-			}
-			if (downloadListItem.mediaType == MediaType.DOCUMENT) {
-				downloadListItem.iconId = IconsAdapter.getIconId(IconsAdapter.ICON_TYPE_DOCUMENT);
-			}
-			if (downloadListItem.mediaType == MediaType.APPLICATION) {
-				downloadListItem.iconId = IconsAdapter.getIconId(IconsAdapter.ICON_TYPE_APPLICATION);
-			}
-			if (downloadListItem.mediaType == MediaType.ARCHIVE) {
-				downloadListItem.iconId = IconsAdapter.getIconId(IconsAdapter.ICON_TYPE_ARCHIVE);
-			}
 			downloadListItem.setIsFromOtherUser(folderDownloadFile.isCopied);
 			downloadListItem.setIsCopyable(folderDownloadFile.isCopyable);
 			downloadListItem.setFreeTransfer(folderDownloadFile.isFileFreeForUser);
-			SearchResponseParser.setItemThumb(downloadListItem, folderDownloadFile.mediaType, folderDownloadFile.thumbnailImg, folderDownloadFile.smallThumbnailImg, folderDownloadFile.streamingUrl);
 			downloadListItem.setFileSize(folderDownloadFile.size + "");
 			downloadListItem.setFileSizeInBytes(folderDownloadFile.size * 1000);
 			return downloadListItem;
@@ -238,8 +220,6 @@ public class DownloadListItem extends FileListItem {
 	public static ArrayList<DownloadListItem> parseTreeRequest(FilesFoldersResponse filesFoldersResponse, TREE_MODE tree_mode) {
 		String str;
 		String str2;
-		int iconId = IconsAdapter.getIconId(IconsAdapter.ICON_TYPE_FOLDER);
-		int iconId2 = IconsAdapter.getIconId(IconsAdapter.ICON_TYPE_LOCKED);
 		FilesFoldersResponse.Owner owner = filesFoldersResponse.owner;
 		String str3 = null;
 		if (owner != null) {
@@ -255,21 +235,10 @@ public class DownloadListItem extends FileListItem {
 		ArrayList<FilesFoldersResponse.ChFile> arrayList3 = filesFoldersResponse.files;
 		if (tree_mode == TREE_MODE.ALL || tree_mode == TREE_MODE.FOLDERS) {
 			Iterator<FilesFoldersResponse.ChFolder> it = arrayList2.iterator();
-			while (it.hasNext()) {
-				FilesFoldersResponse.ChFolder next = it.next();
-				DownloadListItem downloadListItem = new DownloadListItem(next.hasPassword ? iconId2 : iconId, next.f500id, next.parentId, next.name, next.hasPassword);
-				downloadListItem.setForAdult(next.isAdult);
-				downloadListItem.setOwnerId(filesFoldersResponse.owner.f502id);
-				arrayList.add(downloadListItem);
-				iconId = iconId;
-				iconId2 = iconId2;
-			}
 		}
 		if (tree_mode == TREE_MODE.ALL || tree_mode == TREE_MODE.FILES) {
-			Iterator<FilesFoldersResponse.ChFile> it2 = arrayList3.iterator();
-			while (it2.hasNext()) {
-				FilesFoldersResponse.ChFile next2 = it2.next();
-				DownloadListItem downloadListItem2 = new DownloadListItem(IconsAdapter.getIconId(next2.mediaType), next2.f498id, next2.name, next2.fileType, next2.size, next2.isFree, next2.isCopied);
+			for (FilesFoldersResponse.ChFile next2 : arrayList3) {
+				DownloadListItem downloadListItem2 = new DownloadListItem(2, next2.f498id, next2.name, next2.fileType, next2.size, next2.isFree, next2.isCopied);
 				downloadListItem2.setFolderParentId(filesFoldersResponse.folderId);
 				downloadListItem2.setIsCopyable(next2.isCopyable);
 				downloadListItem2.setMediaType(next2.mediaType);
@@ -278,26 +247,13 @@ public class DownloadListItem extends FileListItem {
 					downloadListItem2.setSourceAccountName(next2.sourceAccount.name);
 					downloadListItem2.setSourceAvatarUrl(next2.sourceAccount.avatarUrl);
 				}
-				if (next2.mediaType.equals(MediaType.IMAGE.getName())) {
-					downloadListItem2.setThumbUrl(next2.thumbUrl);
-					downloadListItem2.setSmallThumbUrl(next2.smallThumbUrl);
-				} else if (next2.mediaType.equals(MediaType.VIDEO.getName())) {
-					downloadListItem2.setStreamingUrl(next2.streamUrl);
-					downloadListItem2.setThumbUrl(next2.thumbUrl);
-					downloadListItem2.setSmallThumbUrl(next2.smallThumbUrl);
-				} else if (next2.mediaType.equals(MediaType.MUSIC.getName())) {
-					downloadListItem2.setStreamingUrl(next2.streamUrl);
-				}
 				if (owner != null) {
 					downloadListItem2.setOwnerId(str3);
 					downloadListItem2.setOwnerName(str2);
 					str = str;
 					downloadListItem2.setOwnerAvatarUrl(str);
-				} else {
-					str = str;
 				}
 				arrayList.add(downloadListItem2);
-				arrayList = arrayList;
 			}
 		}
 		return arrayList;

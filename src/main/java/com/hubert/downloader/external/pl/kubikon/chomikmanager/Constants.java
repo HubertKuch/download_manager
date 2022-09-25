@@ -60,4 +60,5 @@ public class Constants {
 	public static final String ERROR_UNKNOWN = "Wystąpił nieznany błąd";
 	public static final String ERROR_WEB_API_RETRY_TIMEOUT = "Przekroczono limit prób dla WebApi";
 
+    public static final String ERROR_SSL_ERROR = "";
 }

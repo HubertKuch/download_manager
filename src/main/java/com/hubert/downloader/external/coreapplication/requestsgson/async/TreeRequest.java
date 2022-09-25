@@ -1,12 +1,8 @@
 package com.hubert.downloader.external.coreapplication.requestsgson.async;
 
-import com.coreapplication.modelsgson.FilesFoldersResponse;
-import com.coreapplication.requestsgson.BaseGsonRequest;
 import com.hubert.downloader.external.coreapplication.modelsgson.FilesFoldersResponse;
 import com.hubert.downloader.external.coreapplication.requestsgson.BaseGsonRequest;
 import com.hubert.downloader.external.pl.kubikon.shared.utils.HttpRequest;
-import pl.kubikon.chomikmanager.model.exception.PasswordRequiredException;
-import pl.kubikon.shared.utils.HttpRequest;
 
 public class TreeRequest extends BaseGsonRequest<FilesFoldersResponse> {
 
@@ -43,14 +39,12 @@ public class TreeRequest extends BaseGsonRequest<FilesFoldersResponse> {
 	}
 
 	@Override
-	public FilesFoldersResponse getResponse() throws Exception {
+	public FilesFoldersResponse getResponse() throws Exception, PasswordRequiredException {
 		FilesFoldersResponse filesFoldersResponse = super.getResponse();
 		if (filesFoldersResponse.code != null && filesFoldersResponse.code == 0) {
 			filesFoldersResponse.folderId = this.folderId;
 			filesFoldersResponse.folderName = this.folderName;
 			return filesFoldersResponse;
-		} else if (filesFoldersResponse.code != null && (filesFoldersResponse.code == 12 || filesFoldersResponse.code == 2)) {
-			throw new PasswordRequiredException(folderName, accountId, folderId);
 		} else
 			throw new Exception("FilesFoldersResponse: responseCode=" + getResponseCode() + " errorCode= " + filesFoldersResponse.code + " message= " + filesFoldersResponse.Message);
 	}

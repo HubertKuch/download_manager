@@ -6,9 +6,7 @@ import com.hubert.downloader.external.coreapplication.modelsgson.FolderDownload;
 import com.hubert.downloader.external.coreapplication.modelsgson.GetDownloadUrl;
 import com.hubert.downloader.external.coreapplication.requestsgson.async.*;
 import com.hubert.downloader.external.coreapplication.utils.HttpUtils;
-import com.hubert.downloader.external.pl.kubikon.chomikmanager.SessionManager;
 import com.hubert.downloader.external.pl.kubikon.chomikmanager.SessionManagerImpl;
-import com.hubert.downloader.external.pl.kubikon.shared.utils.Utils;
 
 import java.util.UUID;
 
@@ -19,13 +17,11 @@ public class AndroidApi {
 
 	public static void login(String userName, String password) throws Exception, PasswordRequiredException {
 		PostLoginRequest.LoginResponse response = new PostLoginRequest(userName, password).getResponse();
+
 		if (response.responseCode != 0) {
-			SessionManagerImpl.clearLocalTokenData();
 			String errorMessage = "Error " + response.responseCode;
-			Utils.log("Error while logging in: " + errorMessage);
 			throw new Exception(errorMessage);
 		} else {
-			Utils.log("Succesfully logged in");
 			SessionManagerImpl.setParam(SessionManagerImpl.SESSION_AUTHORIZATION_TOKEN_ANDROID_API, response.apiKey);
 			SessionManagerImpl.setParam(SessionManagerImpl.SESSION_USERNAME, response.accountName);
 			SessionManagerImpl.setParam(SessionManagerImpl.SESSION_PASSWORD, password);
@@ -33,11 +29,11 @@ public class AndroidApi {
 		}
 	}
 
-	public static GetAccountInfo.AccountInfo getAccountInfo() throws Exception {
+	public static GetAccountInfo.AccountInfo getAccountInfo() throws Exception, PasswordRequiredException {
 		return new GetAccountInfo().getResponse();
 	}
 
-	public static GetDownloadUrl getDownloadUrl(long fileId) throws Exception {
+	public static GetDownloadUrl getDownloadUrl(long fileId) throws Exception, PasswordRequiredException {
 		return new GetUrlDownloadRequest(fileId).getResponse();
 	}
 
@@ -64,33 +60,32 @@ public class AndroidApi {
 		return new GetFolderDetailsRequest(accountId, folderId, folderName).getResponse();
 	}
 
-	public static ApiError postPassword(String accountId, String folderId, String password) throws Exception {
+	public static ApiError postPassword(String accountId, String folderId, String password) throws Exception, PasswordRequiredException {
 		if (folderId.equals("0"))
 			return postUserPassword(accountId, password);
 		else
 			return postFolderPassword(accountId, folderId, password);
 	}
 
-	public static ApiError postFolderPassword(String accountId, String folderId, String password) throws Exception {
+	public static ApiError postFolderPassword(String accountId, String folderId, String password) throws Exception, PasswordRequiredException {
 		return new PostFoldersPasswordRequest(accountId, folderId, password).getResponse();
 	}
 
-	public static ApiError postUserPassword(String accountId, String password) throws Exception {
+	public static ApiError postUserPassword(String accountId, String password) throws Exception, PasswordRequiredException {
 		return new PostUserPasswordRequest(accountId, password).getResponse();
 	}
 
 	public static boolean isLoggedIn() {
-		return SessionManager.hasParam(SessionManagerImpl.SESSION_AUTHORIZATION_TOKEN_ANDROID_API) && SessionManager.hasParam(SessionManagerImpl.SESSION_USERNAME);
+		return pl.kubikon.shared.SessionManager.hasParam(SessionManagerImpl.SESSION_AUTHORIZATION_TOKEN_ANDROID_API) && pl.kubikon.shared.SessionManager.hasParam(SessionManagerImpl.SESSION_USERNAME);
 	}
 
 	public static String getDeviceId() {
-		String deviceId = SessionManager.getParam(SessionManagerImpl.SESSION_DEVICE_ID_ANDROID_API);
+		String deviceId = pl.kubikon.shared.SessionManager.getParam(SessionManagerImpl.SESSION_DEVICE_ID_ANDROID_API);
 		if (deviceId == null) {
 			deviceId = UUID.randomUUID().toString();
 			try {
-				SessionManager.setParam(SessionManagerImpl.SESSION_DEVICE_ID_ANDROID_API, deviceId);
+				pl.kubikon.shared.SessionManager.setParam(SessionManagerImpl.SESSION_DEVICE_ID_ANDROID_API, deviceId);
 			} catch (Exception e) {
-				Utils.log(e);
 			}
 		}
 		return deviceId;

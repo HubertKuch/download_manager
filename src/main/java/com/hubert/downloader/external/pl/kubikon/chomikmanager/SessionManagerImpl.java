@@ -2,7 +2,7 @@ package com.hubert.downloader.external.pl.kubikon.chomikmanager;
 
 import com.hubert.downloader.external.pl.kubikon.chomikmanager.api.AndroidApi;
 
-public class SessionManagerImpl extends SessionManager {
+public class SessionManagerImpl extends pl.kubikon.shared.SessionManager {
 
 	public static final String SESSION_USERNAME = "username";
 	public static final String SESSION_PASSWORD = "password";

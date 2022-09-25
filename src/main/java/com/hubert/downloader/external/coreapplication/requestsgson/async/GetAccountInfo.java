@@ -1,11 +1,10 @@
 package com.hubert.downloader.external.coreapplication.requestsgson.async;
 
-import com.coreapplication.requestsgson.BaseGsonRequest;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import pl.kubikon.chomikmanager.Constants;
-import pl.kubikon.shared.SessionManager;
-import pl.kubikon.shared.utils.HttpRequest;
+import com.hubert.downloader.external.coreapplication.requestsgson.BaseGsonRequest;
+import com.hubert.downloader.external.pl.kubikon.chomikmanager.Constants;
+import com.hubert.downloader.external.pl.kubikon.shared.utils.HttpRequest;
 
 public class GetAccountInfo extends BaseGsonRequest<GetAccountInfo.AccountInfo> {
 
@@ -59,10 +58,9 @@ public class GetAccountInfo extends BaseGsonRequest<GetAccountInfo.AccountInfo> 
 	}
 
 	@Override
-	public AccountInfo getResponse() throws Exception {
+	public AccountInfo getResponse() throws Exception, PasswordRequiredException {
 		AccountInfo response = super.getResponse();
 		if (getResponseCode() == 401) {
-			SessionManager.clearLocalTokenData();
 			throw new Exception(Constants.ERROR_RELOGIN_REQUIRED);
 		}
 		return response;

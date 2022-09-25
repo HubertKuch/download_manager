@@ -24,7 +24,7 @@ public abstract class BaseGsonRequest<T> {
 	public BaseGsonRequest(String uri, Class<T> valueType) {
 		this.url = AndroidApi.BASE_URL + uri;
 		this.valueType = valueType;
-		httpRequest = new HttpRequest(url);
+		httpRequest = new HttpRequest(url).setLogEnabled();
 	}
 
 	public abstract void prepareHttpRequest(HttpRequest httpRequest);
@@ -35,6 +35,8 @@ public abstract class BaseGsonRequest<T> {
 			httpRequest.addHeader("Api-Key", SessionManagerImpl.getParam(SessionManagerImpl.SESSION_AUTHORIZATION_TOKEN_ANDROID_API));
 		httpRequest.addHeaders(getHeaders(httpRequest));
 		HttpResponse httpResponse = httpRequest.fetchResponse();
+
+
 		int retryIndex = 0;
 		while (httpResponse.responseCode == 522 && retryIndex < 5) {//522: Connection timed out
 			Thread.sleep(8000);
@@ -46,7 +48,7 @@ public abstract class BaseGsonRequest<T> {
 
 	public T getResponse() throws Exception, PasswordRequiredException {
 		String response = getResponseAsString();
-		if (response == null)
+		if (response == null || response.isEmpty())
 			return null;
 		return mapper.readValue(response, valueType);
 	}

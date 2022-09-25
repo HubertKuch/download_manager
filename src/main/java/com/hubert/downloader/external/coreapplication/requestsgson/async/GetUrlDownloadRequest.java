@@ -26,7 +26,7 @@ public class GetUrlDownloadRequest extends BaseGsonRequest<GetDownloadUrl> {
 	}
 
 	@Override
-	public GetDownloadUrl getResponse() throws Exception {
+	public GetDownloadUrl getResponse() throws Exception, PasswordRequiredException {
 		GetDownloadUrl getDownloadUrlResponse = super.getResponse();
 		if (getResponseCode() == 404)
 			throw new Exception(Constants.ERROR_FILE_NOT_FOUND);

@@ -1,8 +1,5 @@
 package com.hubert.downloader.external.pl.kubikon.shared.utils;
 
-import java.net.HttpCookie;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 public class HttpResponse {

@@ -1,5 +1,6 @@
 package com.hubert.downloader.external.coreapplication.requestsgson.async;
 
+import com.hubert.downloader.external.coreapplication.helpers.SearchResponseParser;
 import com.hubert.downloader.external.coreapplication.models.AccountsListItem;
 import com.hubert.downloader.external.coreapplication.requestsgson.BaseGsonRequest;
 import com.hubert.downloader.external.pl.kubikon.shared.utils.HttpRequest;
@@ -38,7 +39,7 @@ public class GetSearchAccountsRequest extends BaseGsonRequest<JSONObject> {
 	}
 
 	public SearchAccountsResult getParsedResponse() throws Exception {
-		JSONObject jSONObject = getResponseAsJsonObject();
+		org.json.JSONObject jSONObject = getResponseAsJsonObject();
 		SearchAccountsResult searchAccountsResult = new SearchAccountsResult();
 		searchAccountsResult.isNextPageAvailable = jSONObject.optBoolean("IsNextPageAvailable", false);
 		try {

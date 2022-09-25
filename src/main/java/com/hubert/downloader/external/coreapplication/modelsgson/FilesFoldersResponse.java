@@ -1,11 +1,9 @@
 package com.hubert.downloader.external.coreapplication.modelsgson;
 
-import com.coreapplication.models.AccountsListItem;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import pl.kubikon.chomikmanager.ui.ChomikManager;
+import com.hubert.downloader.external.coreapplication.models.AccountsListItem;
 
-import javax.swing.*;
 import java.util.ArrayList;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -92,18 +90,9 @@ public class FilesFoldersResponse {
 
 		public abstract String getDisplayName();
 
-		public abstract boolean isFolder();
+		public abstract String getFileName();
 
-		public ImageIcon getIcon() {
-			if (isFolder()) {
-				ChFolder folder = (ChFolder) this;
-				if (folder.hasPassword)
-					return ChomikManager.folderLockedIcon;
-				else
-					return ChomikManager.folderIcon;
-			} else
-				return ChomikManager.fileIcon;
-		}
+		public abstract boolean isFolder();
 
 	}
 
@@ -169,6 +158,11 @@ public class FilesFoldersResponse {
 		@Override
 		public String getDisplayName() {
 			return isParentFolderPointer ? ".." : getName().replaceAll("\\s+", " ");
+		}
+
+		@Override
+		public String getFileName() {
+			return null;
 		}
 
 		@Override
@@ -287,6 +281,11 @@ public class FilesFoldersResponse {
 		@Override
 		public String getDisplayName() {
 			return getName().replaceAll("\\s+", " ");
+		}
+
+		@Override
+		public String getFileName() {
+			return null;
 		}
 
 		@Override

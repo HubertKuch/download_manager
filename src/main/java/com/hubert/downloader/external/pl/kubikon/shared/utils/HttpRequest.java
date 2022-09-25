@@ -1,18 +1,20 @@
 package com.hubert.downloader.external.pl.kubikon.shared.utils;
 
-import org.apache.commons.io.IOUtils;
+import com.hubert.downloader.external.pl.kubikon.chomikmanager.Constants;
+import org.apache.tomcat.util.http.fileupload.IOUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import pl.kubikon.shared.Constants;
-import pl.kubikon.shared.model.ServerUnknownErrorException;
 
 import javax.net.ssl.*;
+import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.HttpCookie;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.security.KeyStore;
 import java.security.SecureRandom;
@@ -21,6 +23,7 @@ import java.security.cert.X509Certificate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 import java.util.zip.GZIPInputStream;
 
 public class HttpRequest {
@@ -135,15 +138,11 @@ public class HttpRequest {
 	public InputStream inputStream() throws Exception {
 		try {
 			String url = getUrl();
-			if (log)
-				Utils.log(requestId + " url=\"" + url + "\"");
-			connection = (HttpURLConnection) new URL(url).openConnection();
+			this.connection = (HttpURLConnection) new URL(url).openConnection();
 			connection.setRequestMethod(method.name());
 			connection.setConnectTimeout(connectionTimeoutMs);
 			for (String key : headers.keySet()) {
 				connection.setRequestProperty(key, headers.get(key));
-				if (log)
-					Utils.log(requestId + " request header=" + key + ": " + headers.get(key));
 			}
 			connection.setRequestProperty("Accept-Encoding", "gzip, deflate");
 			//trustEveryone(connection);
@@ -195,21 +194,10 @@ public class HttpRequest {
 					connection.setUseCaches(false);
 					DataOutputStream wr = new DataOutputStream(connection.getOutputStream());
 					wr.write(postData);
-					if (log)
-						Utils.log(requestId + " body=\"" + body + "\"");
 				}
 			}
 			responseCode = connection.getResponseCode();
-			if (log)
-				Utils.log(requestId + " responseCode=\"" + responseCode + "\"");
-			/*Map<String, List<String>> responseHeaders = connection.getHeaderFields();
-			for (String key : responseHeaders.keySet()) {
-				if (log)
-					Utils.log(requestId + " " + "response header=" + key + ": " + StringUtils.join(responseHeaders.get(key), ";"));
-			}*/
 			InputStream stream;
-			if (responseCode == 520)
-				throw new ServerUnknownErrorException();
 			if (responseCode >= 400)
 				stream = connection.getErrorStream();
 			else
@@ -229,10 +217,6 @@ public class HttpRequest {
 					}
 				}
 			}
-			for (String cookieName : responseCookies.keySet()) {
-				if (log)
-					Utils.log(requestId + " response cookie=" + cookieName + ": " + responseCookies.get(cookieName));
-			}
 			return stream;
 		} catch (SSLHandshakeException e) {
 			e.printStackTrace();
@@ -247,12 +231,12 @@ public class HttpRequest {
 	public HttpResponse fetchResponse() throws Exception {
 		InputStream stream = inputStream();
 		String responseBody = null;
+
 		if (stream != null) {
-			responseBody = IOUtils.toString(stream, StandardCharsets.UTF_8);
+
+			responseBody = new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8)).lines().collect(Collectors.joining("\n"));
 			stream.close();
 		}
-		if (log)
-			Utils.log(requestId + " responseBody=\"" + responseBody + "\"");
 		return new HttpResponse(connection.getResponseCode(), responseBody, responseCookies);
 	}
 

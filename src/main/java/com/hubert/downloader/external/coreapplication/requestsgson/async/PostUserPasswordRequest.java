@@ -23,19 +23,14 @@ public class PostUserPasswordRequest extends BaseGsonRequest<ApiError> {
 
 	@Override
 	public void prepareHttpRequest(HttpRequest httpRequest) {
-		JSONObject body = new JSONObject();
+		org.json.JSONObject body = new org.json.JSONObject();
 		body.put(ACCOUNT_ID, accountId);
 		body.put(PASSWORD, password);
 		httpRequest.setBodyJson(body);
 	}
 
 	@Override
-	public void prepareHttpRequest(HttpRequest httpRequest) {
-
-	}
-
-	@Override
-	public ApiError getResponse() throws Exception {
+	public ApiError getResponse() throws Exception, PasswordRequiredException {
 		ApiError apiError = super.getResponse();
 		if (getResponseCode() == 401 && apiError.code == 2)
 			throw new Exception(Constants.ERROR_INVALID_PASSWORD);

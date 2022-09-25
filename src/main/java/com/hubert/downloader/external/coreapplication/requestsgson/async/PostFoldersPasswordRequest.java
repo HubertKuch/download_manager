@@ -33,7 +33,7 @@ public class PostFoldersPasswordRequest extends BaseGsonRequest<ApiError> {
 	}
 
 	@Override
-	public ApiError getResponse() throws Exception {
+	public ApiError getResponse() throws Exception, PasswordRequiredException {
 		ApiError apiError = super.getResponse();
 		if (getResponseCode() == 401 && (apiError.code == 12 || apiError.code == 2))
 			throw new Exception(Constants.ERROR_INVALID_PASSWORD);
