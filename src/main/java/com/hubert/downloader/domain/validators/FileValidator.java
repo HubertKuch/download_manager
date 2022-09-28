@@ -1,8 +1,7 @@
 package com.hubert.downloader.domain.validators;
 
-import com.hubert.downloader.models.File;
-import com.hubert.downloader.models.User;
-import org.springframework.stereotype.Component;
+import com.hubert.downloader.domain.models.file.File;
+import com.hubert.downloader.domain.models.user.User;
 import org.springframework.stereotype.Service;
 
 @Service

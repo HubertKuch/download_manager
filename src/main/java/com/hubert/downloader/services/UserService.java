@@ -1,6 +1,6 @@
 package com.hubert.downloader.services;
 
-import com.hubert.downloader.models.User;
+import com.hubert.downloader.domain.models.user.User;
 import com.hubert.downloader.repositories.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

@@ -1,6 +1,7 @@
 package com.hubert.downloader.controllers;
 
-import com.hubert.downloader.models.User;
+import com.hubert.downloader.domain.models.user.User;
+import com.hubert.downloader.domain.models.user.dto.NewUserDTO;
 import com.hubert.downloader.services.FileService;
 import com.hubert.downloader.services.UserService;
 import lombok.RequiredArgsConstructor;
@@ -22,7 +23,7 @@ public class UserController {
     }
 
     @PostMapping("/")
-    public User saveUser(@RequestBody User user) {
-        return userService.saveUser(user);
+    public User saveUser(@RequestBody NewUserDTO user) {
+        return userService.saveUser(User.fromDTO(user));
     }
 }

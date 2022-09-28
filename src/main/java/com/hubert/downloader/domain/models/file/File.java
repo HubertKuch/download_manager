@@ -1,22 +1,20 @@
-package com.hubert.downloader.models;
+package com.hubert.downloader.domain.models.file;
 
 import com.hubert.downloader.domain.InformationSize;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
 
-@Setter
-@Getter
+@Data
 public class File {
-    private String id;
     private String name;
     private String extension;
+    private String path;
     private InformationSize size;
 
-    public File(String id, String name, InformationSize size) {
-        this.id = id;
+    public File(String name, String path, InformationSize size) {
         this.name = name;
         this.extension = getExtensionFromFileName(name);
         this.size = size;
+        this.path = path;
     }
 
     private String getExtensionFromFileName(String filename) {
