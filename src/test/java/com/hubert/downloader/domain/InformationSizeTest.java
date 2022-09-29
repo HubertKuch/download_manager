@@ -8,7 +8,7 @@ class InformationSizeTest {
 
     @Test
     void parseBytesToKilobytes() {
-        InformationSize informationSize = new InformationSize(InformationUnit.BYTE, 1024F);
+        InformationSize informationSize = new InformationSize(InformationUnit.BYTE, 1024L);
 
         assertEquals(
                 1,
@@ -18,15 +18,9 @@ class InformationSizeTest {
 
     @Test
     void parseKilobytesToMegabytes() {
-        InformationSize informationSize = new InformationSize(InformationUnit.KILO_BYTE, 1024F);
+        InformationSize informationSize = new InformationSize(InformationUnit.KILO_BYTE, 1024L);
 
         assertEquals(1, informationSize.parseTo(InformationUnit.MEGA_BYTE).size());
     }
 
-    @Test
-    void parseMegabytesToBytes() {
-        InformationSize informationSize = new InformationSize(InformationUnit.MEGA_BYTE, 1F);
-
-        assertEquals(1024 * 1024, informationSize.parseTo(InformationUnit.KILO_BYTE).size());
-    }
 }
