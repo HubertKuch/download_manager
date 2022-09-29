@@ -7,21 +7,16 @@ import com.hubert.downloader.domain.models.user.AccessCodeDTO;
 import com.hubert.downloader.services.TokenService;
 import com.hubert.downloader.services.UserService;
 import com.hubert.downloader.utils.CachedBodyHttpServletRequest;
-import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import lombok.Setter;
-import org.springframework.util.StreamUtils;
-import org.springframework.web.filter.OncePerRequestFilter;
-import org.springframework.web.util.ContentCachingRequestWrapper;
-import org.springframework.web.util.ContentCachingResponseWrapper;
+import org.springframework.core.annotation.Order;
 
 import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.stream.Collectors;
 
+@Order(2)
 @RequiredArgsConstructor
 public class AuthFilter implements Filter {
 
