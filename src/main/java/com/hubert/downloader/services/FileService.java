@@ -51,7 +51,7 @@ public class FileService {
 
             return new File(fileIncomingDTO.file(), downloadUrl.fileUrl, new InformationSize(
                     InformationUnit.KILO_BYTE,
-                    (float) requestedFile.get(0).size
+                    requestedFile.get(0).size
             ));
         } catch (Exception | PasswordRequiredException e) {
             throw new RuntimeException(e);

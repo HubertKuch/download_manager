@@ -51,7 +51,7 @@ public class User {
         return user;
     }
 
-    public Float compareFileSizeWithUserTransfer(final File file) {
+    public Long compareFileSizeWithUserTransfer(final File file) {
         return transfer.getTransfer().parseTo(InformationUnit.BYTE).size() - file.getSize().parseTo(InformationUnit.BYTE).size();
     }
 
