@@ -1,6 +1,5 @@
 package com.hubert.downloader.controllers;
 
-import com.hubert.downloader.domain.exceptions.FileNotFoundException;
 import com.hubert.downloader.domain.exceptions.UserCantDownloadFile;
 import com.hubert.downloader.domain.models.file.File;
 import com.hubert.downloader.domain.models.file.dto.FileIncomingDTO;
@@ -13,7 +12,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @RestController
 @RequiredArgsConstructor
