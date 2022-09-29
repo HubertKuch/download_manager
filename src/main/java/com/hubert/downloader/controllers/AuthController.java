@@ -15,6 +15,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 @RestController
+
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/auth")
 public class AuthController {

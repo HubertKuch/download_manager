@@ -1,7 +1,5 @@
 package com.hubert.downloader.auth;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.hubert.downloader.domain.models.tokens.RequestWithTokenDTO;
 import com.hubert.downloader.domain.models.tokens.Token;
 import com.hubert.downloader.domain.models.user.AccessCodeDTO;
 import com.hubert.downloader.services.TokenService;
@@ -16,7 +14,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
-@Order(2)
+@Order(-1)
 @RequiredArgsConstructor
 public class AuthFilter implements Filter {
 
@@ -31,7 +29,7 @@ public class AuthFilter implements Filter {
     private void unauthorized(final ServletResponse servletResponse) throws IOException {
         servletResponse.getOutputStream().write("{\"message\": \"Unauthorized\"}".getBytes(StandardCharsets.UTF_8));
         ((HttpServletResponse) servletResponse).setHeader("Content-Type", "application/json");
-        ((HttpServletResponse) servletResponse).setStatus(401);
+        ((HttpServletResponse) servletResponse).setStatus(403);
     }
 
     private Boolean isValidTokenRequest(final HttpServletRequest request) {
@@ -46,6 +44,13 @@ public class AuthFilter implements Filter {
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
         CachedBodyHttpServletRequest cachedRequest = new CachedBodyHttpServletRequest((HttpServletRequest) servletRequest);
         HttpServletResponse response = (HttpServletResponse) servletResponse;
+
+        if (cachedRequest.getMethod().equals("OPTIONS")) {
+            response.setStatus(200);
+            filterChain.doFilter(cachedRequest, response);
+            return;
+        }
+
         try {
             if (!isValidRequest(cachedRequest) || !isValidTokenRequest(cachedRequest)) {
                 unauthorized(response);

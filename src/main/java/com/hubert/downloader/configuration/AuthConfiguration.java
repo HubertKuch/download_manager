@@ -1,6 +1,7 @@
 package com.hubert.downloader.configuration;
 
 import com.hubert.downloader.auth.AuthFilter;
+import com.hubert.downloader.auth.CorsFilter;
 import com.hubert.downloader.services.TokenService;
 import com.hubert.downloader.services.UserService;
 import lombok.RequiredArgsConstructor;
@@ -8,9 +9,6 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.web.cors.CorsConfiguration;
-import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-import org.springframework.web.filter.CorsFilter;
 
 @Configuration
 @RequiredArgsConstructor
@@ -27,7 +25,18 @@ public class AuthConfiguration {
 
         authFilter.setFilter(new AuthFilter(tokenService, userService));
         authFilter.addUrlPatterns("/api/v1/files/*");
+        authFilter.setOrder(2);
 
         return authFilter;
+    }
+
+    @Bean
+    public FilterRegistrationBean<CorsFilter> corsFilterFilterRegistrationBean() {
+        FilterRegistrationBean<CorsFilter> corsFilter = new FilterRegistrationBean<>();
+
+        corsFilter.setFilter(new CorsFilter());
+        corsFilter.setOrder(1);
+
+        return corsFilter;
     }
 }
