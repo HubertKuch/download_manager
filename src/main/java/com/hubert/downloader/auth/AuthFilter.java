@@ -39,11 +39,10 @@ public class AuthFilter implements Filter {
         ((HttpServletResponse) servletResponse).setStatus(401);
     }
 
-    private Boolean isValidTokenRequest(final HttpServletRequest request) throws IOException {
-        String tokenRawData = new String(request.getInputStream().readAllBytes());
-
-        RequestWithTokenDTO token = new ObjectMapper().readValue(tokenRawData, RequestWithTokenDTO.class);
-        AccessCodeDTO accessCodeDTO = tokenService.decode(token.token());
+    private Boolean isValidTokenRequest(final HttpServletRequest request) {
+        String tokenRawData = request.getHeader("Authorization").replace("Bearer ", "");
+        Token token = new Token(tokenRawData);
+        AccessCodeDTO accessCodeDTO = tokenService.decode(token);
 
         return userService.findByAccessCode(accessCodeDTO) != null;
     }
@@ -60,7 +59,7 @@ public class AuthFilter implements Filter {
 
             filterChain.doFilter(cachedRequest, response);
         } catch (Exception ignored) {
-            System.out.println("exception");
+            System.out.println(ignored.getMessage());
             unauthorized(response);
         }
     }

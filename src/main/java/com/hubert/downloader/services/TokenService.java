@@ -11,12 +11,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.util.Arrays;
 import java.util.Base64;
 import java.util.Map;
-import java.util.UUID;
 
 @Service
 public class TokenService {
@@ -38,10 +34,11 @@ public class TokenService {
     public AccessCodeDTO decode(Token token) {
         final Algorithm algorithm = getAlgorithm();
         JWTVerifier verifier = JWT.require(algorithm).build();
-        DecodedJWT jwt = verifier.verify(token.value());
+        DecodedJWT jwt = verifier.verify(token.value().replace("Bearer ", ""));
 
         try {
-            return new ObjectMapper().readValue(Base64.getUrlDecoder().decode(jwt.getPayload()), AccessCodeDTO.class);
+            String test = new String(Base64.getUrlDecoder().decode(jwt.getPayload())).trim();
+            return new ObjectMapper().reader().readValue(test, AccessCodeDTO.class);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
