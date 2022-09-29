@@ -1,7 +1,10 @@
 package com.hubert.downloader.domain.models.file.dto;
 
-public record FileIncomingDTO(
+import com.hubert.downloader.domain.models.tokens.Token;
+
+public record FileIncomingDTO (
         String file,
         String folderId,
-        String account
+        String account,
+        Token token
 ) {}

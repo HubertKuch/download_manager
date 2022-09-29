@@ -16,6 +16,8 @@ import java.util.UUID;
 
 @Data
 @Document
+@AllArgsConstructor
+@NoArgsConstructor
 public class User {
     @MongoId
     private ObjectId id;
