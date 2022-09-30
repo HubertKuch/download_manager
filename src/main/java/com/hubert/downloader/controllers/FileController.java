@@ -3,6 +3,7 @@ package com.hubert.downloader.controllers;
 import com.hubert.downloader.domain.exceptions.UserCantDownloadFile;
 import com.hubert.downloader.domain.models.file.File;
 import com.hubert.downloader.domain.models.file.dto.FileIncomingDTO;
+import com.hubert.downloader.domain.models.file.dto.FileWithoutPath;
 import com.hubert.downloader.domain.models.tokens.Token;
 import com.hubert.downloader.domain.models.user.User;
 import com.hubert.downloader.services.FileService;
@@ -26,13 +27,22 @@ public class FileController {
         requestedFile.setId(UUID.randomUUID());
         User user = userService.findByToken(new Token(token));
 
-        return fileService.downloadFile(user, requestedFile);
+        return fileService.addFile(user, requestedFile);
     }
 
     @GetMapping("/")
-    public List<File> getFiles(@RequestHeader(name = "Authorization") String token) {
+    public List<FileWithoutPath> getFiles(@RequestHeader(name = "Authorization") String token) {
         User user = userService.findByToken(new Token(token));
 
-        return user.getFiles();
+        return user
+                .getFiles()
+                .stream()
+                .map(file -> new FileWithoutPath(
+                        file.getId(),
+                        file.getName(),
+                        file.getExtension(),
+                        file.getSize()
+                ))
+                .toList();
     }
 }

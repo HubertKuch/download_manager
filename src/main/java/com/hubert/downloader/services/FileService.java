@@ -58,7 +58,7 @@ public class FileService {
         }
     }
 
-    public User downloadFile(final User user, final File file) throws UserCantDownloadFile {
+    public User addFile(final User user, final File file) throws UserCantDownloadFile {
         boolean userCanDownloadFile = fileValidator.userCanDownloadAFile(user, file);
 
         if(!userCanDownloadFile) {
