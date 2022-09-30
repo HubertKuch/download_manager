@@ -24,7 +24,10 @@ public class AuthConfiguration {
         FilterRegistrationBean<AuthFilter> authFilter = new FilterRegistrationBean<>();
 
         authFilter.setFilter(new AuthFilter(tokenService, userService));
-        authFilter.addUrlPatterns("/api/v1/files/*");
+        authFilter.addUrlPatterns(
+                "/api/v1/files/*",
+                "/api/v1/users/logged/"
+        );
         authFilter.setOrder(2);
 
         return authFilter;
