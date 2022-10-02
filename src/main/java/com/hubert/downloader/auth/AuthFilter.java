@@ -59,7 +59,6 @@ public class AuthFilter implements Filter {
 
             filterChain.doFilter(cachedRequest, response);
         } catch (Exception ignored) {
-            System.out.println(ignored.getMessage());
             unauthorized(response);
         }
     }

@@ -28,6 +28,11 @@ public class AdminFilter implements Filter {
         CachedBodyHttpServletRequest cachedRequest = new CachedBodyHttpServletRequest((HttpServletRequest) servletRequest);
         HttpServletResponse response = (HttpServletResponse) servletResponse;
 
+        if (cachedRequest.getRequestURI().contains("logged")) {
+            filterChain.doFilter(cachedRequest, response);
+            return;
+        }
+
         if (cachedRequest.getMethod().equals("OPTIONS")) {
             response.setStatus(200);
             filterChain.doFilter(cachedRequest, response);

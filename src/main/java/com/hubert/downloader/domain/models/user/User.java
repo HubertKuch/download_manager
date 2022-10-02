@@ -1,16 +1,17 @@
 package com.hubert.downloader.domain.models.user;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.hubert.downloader.domain.InformationUnit;
 import com.hubert.downloader.domain.Transfer;
 import com.hubert.downloader.domain.models.file.File;
 import com.hubert.downloader.domain.models.user.dto.NewUserDTO;
 import lombok.*;
-import org.bson.types.ObjectId;
+import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
-import org.springframework.data.mongodb.core.mapping.MongoId;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
@@ -19,8 +20,8 @@ import java.util.UUID;
 @AllArgsConstructor
 @NoArgsConstructor
 public class User {
-    @MongoId
-    private ObjectId id;
+    @Id
+    private String id;
     @Field
     private String accessCode;
     @Field
@@ -29,24 +30,32 @@ public class User {
     private List<File> files;
     @Field
     private UserRole role;
+    @Field
+    @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss")
+    private Date expiringDate;
+    @Field
+    private Boolean hasActiveAccount;
 
-    public User(Transfer transfer, UserRole role) {
+    public User(Transfer transfer, UserRole role, Date expiringDate) {
         this.transfer = transfer;
         this.role = role;
+        this.expiringDate = expiringDate;
         this.accessCode = UUID.randomUUID().toString();
     }
 
-    public User(String accessCode, Transfer transfer, List<File> files, UserRole role) {
+    public User(String accessCode, Transfer transfer, List<File> files, UserRole role, Date expiringDate) {
         this.transfer= transfer;
         this.accessCode = accessCode;
         this.files = files == null ? new ArrayList<>() : files;
         this.role = role;
+        this.expiringDate = expiringDate;
     }
 
     public static User fromDTO(NewUserDTO userDTO) {
         User user = new User(
                 userDTO.transfer(),
-                userDTO.role()
+                userDTO.role(),
+                userDTO.expiringDate()
         );
 
         user.setTransfer(userDTO.transfer());
@@ -66,5 +75,9 @@ public class User {
 
     public boolean isUserCanDownloadAFile(final File file) {
         return compareFileSizeWithUserTransfer(file) > 0;
+    }
+
+    public void deactivateAccount() {
+        this.hasActiveAccount = false;
     }
 }

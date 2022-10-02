@@ -27,8 +27,7 @@ public class AuthConfiguration {
         authFilter.setFilter(new AuthFilter(tokenService, userService));
         authFilter.addUrlPatterns(
                 "/api/v1/files/*",
-                "/api/v1/users/",
-                "/api/v1/users/logged/"
+                "/api/v1/users/*"
         );
         authFilter.setOrder(2);
 
@@ -43,6 +42,7 @@ public class AuthConfiguration {
         authFilter.addUrlPatterns(
             "/api/v1/users/"
         );
+
         authFilter.setOrder(3);
 
         return authFilter;
