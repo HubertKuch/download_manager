@@ -27,21 +27,26 @@ public class User {
     private Transfer transfer;
     @Field
     private List<File> files;
+    @Field
+    private UserRole role;
 
-    public User(Transfer transfer) {
+    public User(Transfer transfer, UserRole role) {
         this.transfer = transfer;
+        this.role = role;
         this.accessCode = UUID.randomUUID().toString();
     }
 
-    public User(String accessCode, Transfer transfer, List<File> files) {
+    public User(String accessCode, Transfer transfer, List<File> files, UserRole role) {
         this.transfer= transfer;
         this.accessCode = accessCode;
         this.files = files == null ? new ArrayList<>() : files;
+        this.role = role;
     }
 
     public static User fromDTO(NewUserDTO userDTO) {
         User user = new User(
-                userDTO.transfer()
+                userDTO.transfer(),
+                userDTO.role()
         );
 
         user.setTransfer(userDTO.transfer());

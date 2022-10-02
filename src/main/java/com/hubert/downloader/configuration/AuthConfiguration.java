@@ -1,5 +1,6 @@
 package com.hubert.downloader.configuration;
 
+import com.hubert.downloader.auth.AdminFilter;
 import com.hubert.downloader.auth.AuthFilter;
 import com.hubert.downloader.auth.CorsFilter;
 import com.hubert.downloader.services.TokenService;
@@ -26,12 +27,27 @@ public class AuthConfiguration {
         authFilter.setFilter(new AuthFilter(tokenService, userService));
         authFilter.addUrlPatterns(
                 "/api/v1/files/*",
+                "/api/v1/users/",
                 "/api/v1/users/logged/"
         );
         authFilter.setOrder(2);
 
         return authFilter;
     }
+
+    @Bean
+    public FilterRegistrationBean<AdminFilter> adminFilter() {
+        FilterRegistrationBean<AdminFilter> authFilter = new FilterRegistrationBean<>();
+
+        authFilter.setFilter(new AdminFilter(userService));
+        authFilter.addUrlPatterns(
+            "/api/v1/users/"
+        );
+        authFilter.setOrder(3);
+
+        return authFilter;
+    }
+
 
     @Bean
     public FilterRegistrationBean<CorsFilter> corsFilterFilterRegistrationBean() {
