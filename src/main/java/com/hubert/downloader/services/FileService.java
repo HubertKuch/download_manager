@@ -4,7 +4,9 @@ import com.hubert.downloader.domain.InformationSize;
 import com.hubert.downloader.domain.InformationUnit;
 import com.hubert.downloader.domain.exceptions.FileNotFoundException;
 import com.hubert.downloader.domain.exceptions.UserCantDownloadFile;
+import com.hubert.downloader.domain.models.file.Folder;
 import com.hubert.downloader.domain.models.file.dto.FileIncomingDTO;
+import com.hubert.downloader.domain.models.file.dto.IncomingFolderDTO;
 import com.hubert.downloader.domain.validators.FileValidator;
 import com.hubert.downloader.domain.models.file.File;
 import com.hubert.downloader.domain.models.user.User;
@@ -59,6 +61,35 @@ public class FileService {
         }
     }
 
+    public Folder getRequestedFolder(IncomingFolderDTO incomingFolderDTO) {
+        try {
+            AndroidApi.login(username, password);
+            AccountsListItem account = AndroidApi.searchForAccount(incomingFolderDTO.account());
+            FolderDownload folder = AndroidApi.getFolderDownload(account.getAccountId(), incomingFolderDTO.folderId(), "");
+
+            List<FolderDownloadChFile> requestedFiles = folder.files;
+
+            return new Folder(
+                    incomingFolderDTO.folderId(),
+                    incomingFolderDTO.url(),
+                    incomingFolderDTO.account(),
+                    requestedFiles.stream().map(file -> {
+                        try {
+                            return new File(
+                                    file.fileName,
+                                    AndroidApi.getDownloadUrl(file.getId()).fileUrl,
+                                    new InformationSize(InformationUnit.KILO_BYTE, file.size)
+                            );
+                        } catch (Exception | PasswordRequiredException e) {
+                            throw new RuntimeException(e);
+                        }
+                    }).toList()
+            );
+        } catch (Exception | PasswordRequiredException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     public User addFile(final User user, final File file) throws UserCantDownloadFile {
         boolean userCanDownloadFile = fileValidator.userCanDownloadAFile(user, file);
 
@@ -80,6 +111,7 @@ public class FileService {
         }
 
         user.getTransfer().subtract(file.getSize());
+        userService.saveUser(user);
 
         return file;
     }

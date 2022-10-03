@@ -4,12 +4,13 @@ import com.hubert.downloader.domain.exceptions.FileNotFoundException;
 import com.hubert.downloader.domain.exceptions.HamsterFolderLinkIsInvalid;
 import com.hubert.downloader.domain.exceptions.UserCantDownloadFile;
 import com.hubert.downloader.domain.models.file.File;
-import com.hubert.downloader.domain.models.file.dto.FileIncomingDTO;
-import com.hubert.downloader.domain.models.file.dto.FileWithoutPath;
-import com.hubert.downloader.domain.models.file.dto.NewFileDTO;
+import com.hubert.downloader.domain.models.file.Folder;
+import com.hubert.downloader.domain.models.file.dto.*;
 import com.hubert.downloader.domain.models.tokens.Token;
 import com.hubert.downloader.domain.models.user.User;
 import com.hubert.downloader.domain.models.user.dto.UserWithoutPathInFilesDTO;
+import com.hubert.downloader.external.coreapplication.modelsgson.FolderDownload;
+import com.hubert.downloader.external.pl.kubikon.chomikmanager.api.AndroidApi;
 import com.hubert.downloader.services.FileService;
 import com.hubert.downloader.services.UserService;
 import com.hubert.downloader.utils.HamsterFolderPage;
@@ -45,6 +46,31 @@ public class FileController {
         return user.parseToDto();
     }
 
+    @PostMapping("/whole-folder/")
+    public UserWithoutPathInFilesDTO addFileFromWholeFolder(
+            @RequestHeader(name = "Authorization") String token,
+            @RequestBody FileWithOnlyUrlDTO incomingFile
+    ) throws HamsterFolderLinkIsInvalid {
+        User user = userService.findByToken(new Token(token));
+
+        HamsterFolderPage hamsterFolderPage = HamsterFolderPage.from(incomingFile.url());
+        Folder requestedFolder = fileService.getRequestedFolder(new IncomingFolderDTO(
+                incomingFile.url(),
+                hamsterFolderPage.getAccountName(),
+                hamsterFolderPage.getFolderId()
+        ));
+
+        requestedFolder.files().forEach(file -> {
+            try {
+                fileService.addFile(user, file);
+            } catch (UserCantDownloadFile e) {
+                throw new RuntimeException(e);
+            }
+        });
+
+        return user.parseToDto();
+    }
+
     @GetMapping("/")
     public List<FileWithoutPath> getFiles(@RequestHeader(name = "Authorization") String token) {
         User user = userService.findByToken(new Token(token));
@@ -65,7 +91,7 @@ public class FileController {
     public File downloadFile(
             @PathVariable String id,
             @RequestHeader(name = "Authorization") String token
-    ) throws FileNotFoundException, UserCantDownloadFile, IOException {
+    ) throws FileNotFoundException, UserCantDownloadFile {
         User user = userService.findByToken(new Token(token.replace("Bearer ", "")));
 
         List<File> matchedFiles = user

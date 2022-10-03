@@ -25,11 +25,11 @@ public class HamsterFolderPage {
     public static HamsterFolderPage from(String url) throws HamsterFolderLinkIsInvalid {
         HamsterFolderPage hamsterFolderPage = new HamsterFolderPage(url);
 
-        Connection connection = Jsoup.connect(url);
 
         try {
+            Connection connection = Jsoup.connect(url);
             hamsterFolderPage.document = connection.get();
-        } catch (IOException e) {
+        } catch (IOException|IllegalArgumentException e) {
             throw new HamsterFolderLinkIsInvalid(String.format(hamsterFolderPage.INVALID_LINK_EXCEPTION_FORMAT, url));
         }
 
