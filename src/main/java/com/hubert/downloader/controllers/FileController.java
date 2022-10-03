@@ -1,25 +1,22 @@
 package com.hubert.downloader.controllers;
 
 import com.hubert.downloader.domain.exceptions.FileNotFoundException;
+import com.hubert.downloader.domain.exceptions.HamsterFolderLinkIsInvalid;
 import com.hubert.downloader.domain.exceptions.UserCantDownloadFile;
 import com.hubert.downloader.domain.models.file.File;
 import com.hubert.downloader.domain.models.file.dto.FileIncomingDTO;
 import com.hubert.downloader.domain.models.file.dto.FileWithoutPath;
+import com.hubert.downloader.domain.models.file.dto.NewFileDTO;
 import com.hubert.downloader.domain.models.tokens.Token;
 import com.hubert.downloader.domain.models.user.User;
+import com.hubert.downloader.domain.models.user.dto.UserWithoutPathInFilesDTO;
 import com.hubert.downloader.services.FileService;
 import com.hubert.downloader.services.UserService;
+import com.hubert.downloader.utils.HamsterFolderPage;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
-
 import java.io.*;
-import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.Arrays;
 import java.util.List;
-import java.util.UUID;
-import java.util.stream.Collectors;
 
 @RestController
 @RequiredArgsConstructor
@@ -29,15 +26,23 @@ public class FileController {
     private final UserService userService;
 
     @PostMapping("/")
-    public User addFile(
-            @RequestBody FileIncomingDTO fileIncomingDTO,
+    public UserWithoutPathInFilesDTO addFile(
+            @RequestBody NewFileDTO fileIncomingDTO,
             @RequestHeader(name = "Authorization") String token
-    ) throws UserCantDownloadFile {
-        File requestedFile = fileService.getRequestedFile(fileIncomingDTO);
-        requestedFile.setId(UUID.randomUUID());
-        User user = userService.findByToken(new Token(token));
+    ) throws UserCantDownloadFile, HamsterFolderLinkIsInvalid {
+        HamsterFolderPage hamsterFolderPage = HamsterFolderPage.from(fileIncomingDTO.url());
 
-        return fileService.addFile(user, requestedFile);
+        FileIncomingDTO incomingFile = new FileIncomingDTO(
+                fileIncomingDTO.fileName(),
+                hamsterFolderPage.getFolderId(),
+                hamsterFolderPage.getAccountName()
+        );
+
+        File requestedFile = fileService.getRequestedFile(incomingFile);
+        User user = userService.findByToken(new Token(token));
+        user = fileService.addFile(user, requestedFile);
+
+        return user.parseToDto();
     }
 
     @GetMapping("/")

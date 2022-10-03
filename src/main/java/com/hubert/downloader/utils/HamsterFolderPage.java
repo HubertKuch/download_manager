@@ -1,0 +1,58 @@
+package com.hubert.downloader.utils;
+
+import com.hubert.downloader.domain.exceptions.HamsterFolderLinkIsInvalid;
+import lombok.Getter;
+import lombok.Setter;
+import org.jsoup.Connection;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.select.Elements;
+
+import java.io.IOException;
+
+@Getter
+@Setter
+public class HamsterFolderPage {
+
+    private String url;
+    private Document document;
+    private final String INVALID_LINK_EXCEPTION_FORMAT = "`%s` link doesnt contains folder";
+
+    private HamsterFolderPage(String url) {
+        this.url = url;
+    }
+
+    public static HamsterFolderPage from(String url) throws HamsterFolderLinkIsInvalid {
+        HamsterFolderPage hamsterFolderPage = new HamsterFolderPage(url);
+
+        Connection connection = Jsoup.connect(url);
+
+        try {
+            hamsterFolderPage.document = connection.get();
+        } catch (IOException e) {
+            throw new HamsterFolderLinkIsInvalid(String.format(hamsterFolderPage.INVALID_LINK_EXCEPTION_FORMAT, url));
+        }
+
+        return hamsterFolderPage;
+    }
+
+    public String getFolderId() throws HamsterFolderLinkIsInvalid {
+        Elements fileListInputs = this.document.select("#FileListForm input[name=\"folderId\"]");
+
+        if (fileListInputs.isEmpty()) {
+            throw new HamsterFolderLinkIsInvalid(String.format(INVALID_LINK_EXCEPTION_FORMAT, url));
+        }
+
+        return fileListInputs.val();
+    }
+
+    public String getAccountName() throws HamsterFolderLinkIsInvalid {
+        Elements accountNameElement = this.document.select(".chomikName");
+
+        if (accountNameElement.isEmpty()) {
+            throw new HamsterFolderLinkIsInvalid(String.format(INVALID_LINK_EXCEPTION_FORMAT, url));
+        }
+
+        return accountNameElement.text();
+    }
+}

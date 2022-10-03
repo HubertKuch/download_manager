@@ -16,20 +16,11 @@ import com.hubert.downloader.external.coreapplication.requestsgson.async.Passwor
 import com.hubert.downloader.external.pl.kubikon.chomikmanager.api.AndroidApi;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.ByteArrayResource;
-import org.springframework.core.io.Resource;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
 import java.util.Objects;
-import java.util.logging.Filter;
+import java.util.UUID;
 
 @Component
 @RequiredArgsConstructor
@@ -76,6 +67,7 @@ public class FileService {
         }
 
         user.addFile(file);
+        file.setId(UUID.randomUUID());
 
         return userService.saveUser(user);
     }

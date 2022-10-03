@@ -4,7 +4,9 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.hubert.downloader.domain.InformationUnit;
 import com.hubert.downloader.domain.Transfer;
 import com.hubert.downloader.domain.models.file.File;
+import com.hubert.downloader.domain.models.file.dto.FileWithoutPath;
 import com.hubert.downloader.domain.models.user.dto.NewUserDTO;
+import com.hubert.downloader.domain.models.user.dto.UserWithoutPathInFilesDTO;
 import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -79,5 +81,19 @@ public class User {
 
     public void deactivateAccount() {
         this.hasActiveAccount = false;
+    }
+
+    public UserWithoutPathInFilesDTO parseToDto() {
+        List<FileWithoutPath> parsedFiles = this.files.stream().map(file -> new FileWithoutPath(file.getId(), file.getName(), file.getExtension(), file.getSize())).toList();
+
+        return new UserWithoutPathInFilesDTO(
+                id,
+                accessCode,
+                transfer,
+                parsedFiles,
+                role,
+                expiringDate,
+                hasActiveAccount
+        );
     }
 }
