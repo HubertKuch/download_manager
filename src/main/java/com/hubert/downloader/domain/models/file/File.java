@@ -12,22 +12,25 @@ import java.util.UUID;
 @NoArgsConstructor
 public class File {
     private UUID id;
+    private Long hamsterId;
     private String name;
     private String extension;
     private String path;
     private InformationSize size;
 
-    public File(String name, String path, InformationSize size) {
+    public File(Long hamsterId, String name, String path, InformationSize size) {
+        this.hamsterId = hamsterId;
         this.name = name;
         this.extension = getExtensionFromFileName(name);
         this.size = size;
         this.path = path;
     }
 
-    public File(UUID id, String name, String path, InformationSize size) {
-        this.extension = getExtensionFromFileName(name);
+    public File(Long hamsterId, UUID id, String name, String path, InformationSize size) {
+        this.hamsterId = hamsterId;
         this.id = id;
         this.name = name;
+        this.extension = getExtensionFromFileName(name);
         this.path = path;
         this.size = size;
     }

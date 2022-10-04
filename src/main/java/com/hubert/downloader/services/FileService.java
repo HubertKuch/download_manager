@@ -52,10 +52,14 @@ public class FileService {
 
             GetDownloadUrl downloadUrl = AndroidApi.getDownloadUrl(requestedFile.get(0).getId());
 
-            return new File(fileIncomingDTO.file(), downloadUrl.fileUrl, new InformationSize(
-                    InformationUnit.KILO_BYTE,
-                    requestedFile.get(0).size
-            ));
+            return new File(
+                    requestedFile.get(0).fileId,
+                    fileIncomingDTO.file(),
+                    downloadUrl.fileUrl,
+                    new InformationSize(
+                        InformationUnit.KILO_BYTE,
+                        requestedFile.get(0).size
+                    ));
         } catch (Exception | PasswordRequiredException e) {
             throw new RuntimeException(e);
         }
@@ -77,6 +81,7 @@ public class FileService {
                     requestedFiles.stream().map(file -> {
                         try {
                             return new File(
+                                    requestedFiles.get(0).fileId,
                                     file.fileName,
                                     AndroidApi.getDownloadUrl(file.getId()).fileUrl,
                                     new InformationSize(InformationUnit.KILO_BYTE, file.size)

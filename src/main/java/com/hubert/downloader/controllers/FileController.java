@@ -9,6 +9,9 @@ import com.hubert.downloader.domain.models.file.dto.*;
 import com.hubert.downloader.domain.models.tokens.Token;
 import com.hubert.downloader.domain.models.user.User;
 import com.hubert.downloader.domain.models.user.dto.UserWithoutPathInFilesDTO;
+import com.hubert.downloader.external.coreapplication.modelsgson.GetDownloadUrl;
+import com.hubert.downloader.external.coreapplication.requestsgson.async.PasswordRequiredException;
+import com.hubert.downloader.external.pl.kubikon.chomikmanager.api.AndroidApi;
 import com.hubert.downloader.services.FileService;
 import com.hubert.downloader.services.UserService;
 import com.hubert.downloader.utils.HamsterFolderPage;
@@ -17,6 +20,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 
 @RestController
 @RequiredArgsConstructor
@@ -86,7 +90,7 @@ public class FileController {
     public File downloadFile(
             @PathVariable String id,
             @RequestHeader(name = "Authorization") String token
-    ) throws FileNotFoundException, UserCantDownloadFile {
+    ) throws Exception, PasswordRequiredException {
         User user = userService.findByToken(new Token(token.replace("Bearer ", "")));
 
         List<File> matchedFiles = user
@@ -102,6 +106,9 @@ public class FileController {
         }
 
         File file = matchedFiles.get(0);
+        GetDownloadUrl url = AndroidApi.getDownloadUrl(file.getHamsterId());
+
+        file.setPath(url.fileUrl);
 
         return fileService.downloadFile(user, file);
     }
@@ -124,6 +131,18 @@ public class FileController {
         }
 
         Folder folder = matchedFolders.get(0);
+
+        folder.files().forEach(file -> {
+            GetDownloadUrl url = null;
+
+            try {
+                url = AndroidApi.getDownloadUrl(file.getHamsterId());
+            } catch (Exception | PasswordRequiredException e) {
+                throw new RuntimeException(e);
+            }
+
+            file.setPath(url.fileUrl);
+        });
 
         return fileService.downloadFolder(user, folder);
     }
