@@ -4,7 +4,9 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.hubert.downloader.domain.InformationUnit;
 import com.hubert.downloader.domain.Transfer;
 import com.hubert.downloader.domain.models.file.File;
+import com.hubert.downloader.domain.models.file.Folder;
 import com.hubert.downloader.domain.models.file.dto.FileWithoutPath;
+import com.hubert.downloader.domain.models.file.dto.FolderWithFilesWithoutPaths;
 import com.hubert.downloader.domain.models.user.dto.NewUserDTO;
 import com.hubert.downloader.domain.models.user.dto.UserWithoutPathInFilesDTO;
 import lombok.*;
@@ -16,6 +18,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Data
 @Document
@@ -29,7 +32,7 @@ public class User {
     @Field
     private Transfer transfer;
     @Field
-    private List<File> files;
+    private List<Folder> folders;
     @Field
     private UserRole role;
     @Field
@@ -45,10 +48,10 @@ public class User {
         this.accessCode = UUID.randomUUID().toString();
     }
 
-    public User(String accessCode, Transfer transfer, List<File> files, UserRole role, Date expiringDate) {
+    public User(String accessCode, Transfer transfer, List<Folder> folders, UserRole role, Date expiringDate) {
         this.transfer= transfer;
         this.accessCode = accessCode;
-        this.files = files == null ? new ArrayList<>() : files;
+        this.folders = folders == null ? new ArrayList<>() : folders;
         this.role = role;
         this.expiringDate = expiringDate;
     }
@@ -62,7 +65,7 @@ public class User {
 
         user.setTransfer(userDTO.transfer());
         user.setAccessCode(UUID.randomUUID().toString());
-        user.setFiles(List.of());
+        user.setFolders(List.of());
 
         return user;
     }
@@ -71,8 +74,22 @@ public class User {
         return transfer.getTransfer().parseTo(InformationUnit.BYTE).size() - file.getSize().parseTo(InformationUnit.BYTE).size();
     }
 
-    public void addFile(File file) {
-        this.files.add(file);
+    public void addFile(Folder folder, File file) {
+        if (folders == null) folders = List.of();
+
+        List<Folder> matchedFolders = this.folders.stream()
+                .filter(userFolder -> userFolder.name().equals(folder.name()))
+                .toList();
+
+        if (matchedFolders.isEmpty()) {
+            this.folders.add(folder);
+
+            addFile(folder, file);
+
+            return;
+        }
+
+        matchedFolders.get(0).files().add(file);
     }
 
     public boolean isUserCanDownloadAFile(final File file) {
@@ -84,13 +101,19 @@ public class User {
     }
 
     public UserWithoutPathInFilesDTO parseToDto() {
-        List<FileWithoutPath> parsedFiles = this.files.stream().map(file -> new FileWithoutPath(file.getId(), file.getName(), file.getExtension(), file.getSize())).toList();
+        if (folders == null) folders = List.of();
+
+        List<FolderWithFilesWithoutPaths> parsedFolders = this
+                .folders
+                .stream()
+                .map(Folder::parseExcludingPaths)
+                .toList();
 
         return new UserWithoutPathInFilesDTO(
                 id,
                 accessCode,
                 transfer,
-                parsedFiles,
+                parsedFolders,
                 role,
                 expiringDate,
                 hasActiveAccount

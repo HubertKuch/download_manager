@@ -73,6 +73,7 @@ public class FileService {
                     incomingFolderDTO.folderId(),
                     incomingFolderDTO.url(),
                     incomingFolderDTO.account(),
+                    incomingFolderDTO.name(),
                     requestedFiles.stream().map(file -> {
                         try {
                             return new File(
@@ -90,14 +91,14 @@ public class FileService {
         }
     }
 
-    public User addFile(final User user, final File file) throws UserCantDownloadFile {
+    public User addFile(final User user, final File file, final Folder folder) throws UserCantDownloadFile {
         boolean userCanDownloadFile = fileValidator.userCanDownloadAFile(user, file);
 
         if(!userCanDownloadFile) {
             throw new UserCantDownloadFile("User doesn't have enough transfer to download a file.");
         }
 
-        user.addFile(file);
+        user.addFile(folder, file);
         file.setId(UUID.randomUUID());
 
         return userService.saveUser(user);

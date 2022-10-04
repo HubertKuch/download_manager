@@ -9,14 +9,13 @@ import com.hubert.downloader.domain.models.file.dto.*;
 import com.hubert.downloader.domain.models.tokens.Token;
 import com.hubert.downloader.domain.models.user.User;
 import com.hubert.downloader.domain.models.user.dto.UserWithoutPathInFilesDTO;
-import com.hubert.downloader.external.coreapplication.modelsgson.FolderDownload;
-import com.hubert.downloader.external.pl.kubikon.chomikmanager.api.AndroidApi;
 import com.hubert.downloader.services.FileService;
 import com.hubert.downloader.services.UserService;
 import com.hubert.downloader.utils.HamsterFolderPage;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
-import java.io.*;
+
+import java.util.Collection;
 import java.util.List;
 
 @RestController
@@ -41,7 +40,7 @@ public class FileController {
 
         File requestedFile = fileService.getRequestedFile(incomingFile);
         User user = userService.findByToken(new Token(token));
-        user = fileService.addFile(user, requestedFile);
+        user = fileService.addFile(user, requestedFile, hamsterFolderPage.getFolder());
 
         return user.parseToDto();
     }
@@ -57,13 +56,14 @@ public class FileController {
         Folder requestedFolder = fileService.getRequestedFolder(new IncomingFolderDTO(
                 incomingFile.url(),
                 hamsterFolderPage.getAccountName(),
+                hamsterFolderPage.getFolderName(),
                 hamsterFolderPage.getFolderId()
         ));
 
         requestedFolder.files().forEach(file -> {
             try {
-                fileService.addFile(user, file);
-            } catch (UserCantDownloadFile e) {
+                fileService.addFile(user, file, hamsterFolderPage.getFolder());
+            } catch (UserCantDownloadFile | HamsterFolderLinkIsInvalid e) {
                 throw new RuntimeException(e);
             }
         });
@@ -72,18 +72,13 @@ public class FileController {
     }
 
     @GetMapping("/")
-    public List<FileWithoutPath> getFiles(@RequestHeader(name = "Authorization") String token) {
+    public List<FolderWithFilesWithoutPaths> getFiles(@RequestHeader(name = "Authorization") String token) {
         User user = userService.findByToken(new Token(token));
 
         return user
-                .getFiles()
+                .getFolders()
                 .stream()
-                .map(file -> new FileWithoutPath(
-                        file.getId(),
-                        file.getName(),
-                        file.getExtension(),
-                        file.getSize()
-                ))
+                .map(Folder::parseExcludingPaths)
                 .toList();
     }
 
@@ -95,8 +90,10 @@ public class FileController {
         User user = userService.findByToken(new Token(token.replace("Bearer ", "")));
 
         List<File> matchedFiles = user
-                .getFiles()
+                .getFolders()
                 .stream()
+                .map(Folder::files)
+                .flatMap(Collection::stream)
                 .filter(file -> file.getId().toString().equals(id))
                 .toList();
 
