@@ -1,6 +1,7 @@
 package com.hubert.downloader.domain.models.user;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.hubert.downloader.domain.InformationSize;
 import com.hubert.downloader.domain.InformationUnit;
 import com.hubert.downloader.domain.Transfer;
 import com.hubert.downloader.domain.models.file.File;
@@ -121,6 +122,12 @@ public class User {
                 id,
                 accessCode,
                 transfer,
+                List.of(
+                        new Transfer(
+                                new InformationSize(InformationUnit.GIGA_BYTE, transfer.getTransfer().parseTo(InformationUnit.GIGA_BYTE).size()),
+                                new InformationSize(InformationUnit.GIGA_BYTE, transfer.getStartTransfer().parseTo(InformationUnit.GIGA_BYTE).size())
+                        )
+                ),
                 parsedFolders,
                 role,
                 expiringDate,

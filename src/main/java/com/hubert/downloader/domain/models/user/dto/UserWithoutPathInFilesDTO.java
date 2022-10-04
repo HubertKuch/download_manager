@@ -11,6 +11,7 @@ public record UserWithoutPathInFilesDTO(
         String id,
         String accessCode,
         Transfer transfer,
+        List<Transfer> otherTransferSizes,
         List<FolderWithFilesWithoutPaths> folders,
         UserRole role,
         Date expiringDate,
