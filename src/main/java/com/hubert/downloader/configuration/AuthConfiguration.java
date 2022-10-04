@@ -40,14 +40,13 @@ public class AuthConfiguration {
 
         authFilter.setFilter(new AdminFilter(userService));
         authFilter.addUrlPatterns(
-            "/api/v1/users/"
+                "/api/v1/users/"
         );
 
         authFilter.setOrder(3);
 
         return authFilter;
     }
-
 
     @Bean
     public FilterRegistrationBean<CorsFilter> corsFilterFilterRegistrationBean() {

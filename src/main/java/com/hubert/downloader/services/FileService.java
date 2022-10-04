@@ -116,4 +116,18 @@ public class FileService {
 
         return file;
     }
+
+    public Folder downloadFolder(final User user, final Folder folder) throws UserCantDownloadFile {
+        boolean isCanDownloadAFolder = fileValidator.userCanDownloadAFolder(user, folder);
+
+        if(!isCanDownloadAFolder) {
+            throw new UserCantDownloadFile("User doesn't have enough transfer to download a file.");
+        }
+
+        user.getFolders().forEach(folder1 -> folder1.files().forEach(file -> user.getTransfer().subtract(file.getSize())));
+
+        userService.saveUser(user);
+
+        return folder;
+    }
 }

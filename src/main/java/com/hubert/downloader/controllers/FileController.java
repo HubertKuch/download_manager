@@ -105,4 +105,26 @@ public class FileController {
 
         return fileService.downloadFile(user, file);
     }
+
+    @GetMapping("/resource/whole-folder/{id}/")
+    public Folder downloadFolder(
+            @PathVariable String id,
+            @RequestHeader(name = "Authorization") String token
+    ) throws FileNotFoundException, UserCantDownloadFile {
+        User user = userService.findByToken(new Token(token.replace("Bearer ", "")));
+
+        List<Folder> matchedFolders = user
+                .getFolders()
+                .stream()
+                .filter(folder -> folder.id().equals(id))
+                .toList();
+
+        if (matchedFolders.isEmpty()) {
+            throw new FileNotFoundException(String.format("Folder with id - %s - not found.", id));
+        }
+
+        Folder folder = matchedFolders.get(0);
+
+        return fileService.downloadFolder(user, folder);
+    }
 }

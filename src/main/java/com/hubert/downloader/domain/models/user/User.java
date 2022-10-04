@@ -96,6 +96,14 @@ public class User {
         return compareFileSizeWithUserTransfer(file) > 0;
     }
 
+    public boolean isUserCanDownloadAFolder(final Folder folder) {
+        long diff = folder.files().stream()
+                .map(this::compareFileSizeWithUserTransfer)
+                .reduce(0L, Long::sum);
+
+        return diff > 0;
+    }
+
     public void deactivateAccount() {
         this.hasActiveAccount = false;
     }
