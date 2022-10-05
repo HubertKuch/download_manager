@@ -19,9 +19,9 @@ public class UserController {
     private final UserService userService;
 
     @GetMapping("/")
-    public List<User> getUsers() {
+    public List<UserWithoutPathInFilesDTO> getUsers() {
 
-        return userService.getUsers();
+        return userService.getUsers().stream().map(User::parseToDto).toList();
     }
 
     @GetMapping("/logged/")
