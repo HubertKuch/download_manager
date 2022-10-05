@@ -65,7 +65,7 @@ public class HamsterFolderPage {
             throw new HamsterFolderLinkIsInvalid(String.format(INVALID_LINK_EXCEPTION_FORMAT, url));
         }
 
-        return folderNameElements.text().split("-")[0].trim();
+        return folderNameElements.val();
     }
 
     public Folder getFolder() throws HamsterFolderLinkIsInvalid {

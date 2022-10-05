@@ -6,7 +6,6 @@ import com.hubert.downloader.domain.InformationUnit;
 import com.hubert.downloader.domain.Transfer;
 import com.hubert.downloader.domain.models.file.File;
 import com.hubert.downloader.domain.models.file.Folder;
-import com.hubert.downloader.domain.models.file.dto.FileWithoutPath;
 import com.hubert.downloader.domain.models.file.dto.FolderWithFilesWithoutPaths;
 import com.hubert.downloader.domain.models.user.dto.NewUserDTO;
 import com.hubert.downloader.domain.models.user.dto.UserWithoutPathInFilesDTO;
@@ -19,7 +18,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Data
 @Document
@@ -77,6 +75,8 @@ public class User {
 
     public void addFile(Folder folder, File file) {
         if (folders == null) folders = List.of();
+
+        System.out.println(folder.name());
 
         List<Folder> matchedFolders = this.folders.stream()
                 .filter(userFolder -> userFolder.name().equals(folder.name()))

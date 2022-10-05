@@ -3,6 +3,7 @@ package com.hubert.downloader.controllers;
 import com.hubert.downloader.domain.models.tokens.Token;
 import com.hubert.downloader.domain.models.user.User;
 import com.hubert.downloader.domain.models.user.dto.NewUserDTO;
+import com.hubert.downloader.domain.models.user.dto.UserWithoutPathInFilesDTO;
 import com.hubert.downloader.services.FileService;
 import com.hubert.downloader.services.UserService;
 import lombok.RequiredArgsConstructor;
@@ -24,9 +25,9 @@ public class UserController {
     }
 
     @GetMapping("/logged/")
-    public User getLoggedInUser(@RequestHeader(name = "Authorization") String token) {
+    public UserWithoutPathInFilesDTO getLoggedInUser(@RequestHeader(name = "Authorization") String token) {
 
-        return userService.findByToken(new Token(token.replace("Bearer ", "")));
+        return userService.findByToken(new Token(token.replace("Bearer ", ""))).parseToDto();
     }
 
     @PostMapping("/")
