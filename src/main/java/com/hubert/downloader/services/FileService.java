@@ -116,7 +116,10 @@ public class FileService {
             throw new UserCantDownloadFile("User doesn't have enough transfer to download a file.");
         }
 
-        user.getTransfer().subtract(file.getSize());
+        if (user.getTransfer().getTransfer().size() >= 0) {
+            user.getTransfer().subtract(file.getSize());
+        }
+
         userService.saveUser(user);
 
         return file;
@@ -129,7 +132,9 @@ public class FileService {
             throw new UserCantDownloadFile("User doesn't have enough transfer to download a file.");
         }
 
-        user.getFolders().forEach(folder1 -> folder1.files().forEach(file -> user.getTransfer().subtract(file.getSize())));
+        folder.files().forEach(file -> {
+            user.getTransfer().subtract(file.getSize());
+        });
 
         userService.saveUser(user);
 
