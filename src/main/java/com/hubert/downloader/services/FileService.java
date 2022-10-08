@@ -73,24 +73,7 @@ public class FileService {
 
             List<FolderDownloadChFile> requestedFiles = folder.files;
 
-            return new Folder(
-                    incomingFolderDTO.folderId(),
-                    incomingFolderDTO.url(),
-                    incomingFolderDTO.account(),
-                    incomingFolderDTO.name(),
-                    requestedFiles.stream().map(file -> {
-                        try {
-                            return new File(
-                                    requestedFiles.get(0).fileId,
-                                    file.fileName,
-                                    AndroidApi.getDownloadUrl(file.getId()).fileUrl,
-                                    new InformationSize(InformationUnit.KILO_BYTE, file.size)
-                            );
-                        } catch (Exception | PasswordRequiredException e) {
-                            throw new RuntimeException(e);
-                        }
-                    }).toList()
-            );
+            return Folder.from(incomingFolderDTO, requestedFiles);
         } catch (Exception | PasswordRequiredException e) {
             throw new RuntimeException(e);
         }

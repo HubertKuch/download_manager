@@ -20,7 +20,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicReference;
 
 @RestController
 @RequiredArgsConstructor
@@ -106,6 +105,9 @@ public class FileController {
         }
 
         File file = matchedFiles.get(0);
+
+        System.out.println(file);
+
         GetDownloadUrl url = AndroidApi.getDownloadUrl(file.getHamsterId());
 
         file.setPath(url.fileUrl);
