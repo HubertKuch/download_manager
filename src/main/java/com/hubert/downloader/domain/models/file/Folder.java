@@ -9,6 +9,9 @@ import com.hubert.downloader.external.coreapplication.modelsgson.FolderDownloadC
 import com.hubert.downloader.external.coreapplication.requestsgson.async.PasswordRequiredException;
 import com.hubert.downloader.external.pl.kubikon.chomikmanager.api.AndroidApi;
 
+import java.sql.Time;
+import java.sql.Timestamp;
+import java.util.Date;
 import java.util.List;
 
 public record Folder(
@@ -16,7 +19,8 @@ public record Folder(
         String url,
         String account,
         String name,
-        List<File> files
+        List<File> files,
+        Timestamp addedAt
 ) {
 
     public static Folder from(IncomingFolderDTO incomingFolderDTO, List<FolderDownloadChFile> requestedFiles) {
@@ -36,7 +40,8 @@ public record Folder(
                     } catch (Exception | PasswordRequiredException e) {
                         throw new RuntimeException(e);
                     }
-                }).toList()
+                }).toList(),
+                new Timestamp(System.currentTimeMillis())
         );
     }
 

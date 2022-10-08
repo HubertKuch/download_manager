@@ -10,6 +10,7 @@ import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
 
 import java.io.IOException;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 
 @Getter
@@ -74,7 +75,8 @@ public class HamsterFolderPage {
                 url,
                 getAccountName(),
                 getFolderName(),
-                new ArrayList<>()
+                new ArrayList<>(),
+                new Timestamp(System.currentTimeMillis())
         );
     }
 }
