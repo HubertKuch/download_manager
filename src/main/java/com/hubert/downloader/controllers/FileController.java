@@ -16,9 +16,11 @@ import com.hubert.downloader.services.FileService;
 import com.hubert.downloader.services.UserService;
 import com.hubert.downloader.utils.HamsterFolderPage;
 import lombok.RequiredArgsConstructor;
+import org.springframework.util.comparator.Comparators;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
 
 @RestController
@@ -82,6 +84,7 @@ public class FileController {
                 .getFolders()
                 .stream()
                 .map(Folder::parseExcludingPaths)
+                .sorted(Comparator.comparingLong(o -> o.addedAt().getTime()))
                 .toList();
     }
 
