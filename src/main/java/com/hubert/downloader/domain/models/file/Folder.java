@@ -20,7 +20,7 @@ public record Folder(
 ) {
 
     public static Folder from(IncomingFolderDTO incomingFolderDTO, List<FolderDownloadChFile> requestedFiles) {
-        new Folder(
+        return new Folder(
                 incomingFolderDTO.folderId(),
                 incomingFolderDTO.url(),
                 incomingFolderDTO.account(),
@@ -40,7 +40,7 @@ public record Folder(
         );
     }
 
-    public FolderWithFilesWithoutPaths parseExcludingPaths() {\
+    public FolderWithFilesWithoutPaths parseExcludingPaths() {
         return new FolderWithFilesWithoutPaths(
                 id,
                 url,
