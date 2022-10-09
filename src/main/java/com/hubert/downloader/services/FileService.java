@@ -20,6 +20,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.PostConstruct;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
@@ -34,9 +35,18 @@ public class FileService {
     @Value("${android.hamster.credentials.password}")
     private String password;
 
-    public File getRequestedFile(FileIncomingDTO fileIncomingDTO) {
+    @PostConstruct
+    public void preLoginToHamster() {
         try {
             AndroidApi.login(username, password);
+        } catch (Exception | PasswordRequiredException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+
+    public File getRequestedFile(FileIncomingDTO fileIncomingDTO) {
+        try {
             AccountsListItem account = AndroidApi.searchForAccount(fileIncomingDTO.account());
             FolderDownload folder = AndroidApi.getFolderDownload(account.getAccountId(), fileIncomingDTO.folderId(), "");
 

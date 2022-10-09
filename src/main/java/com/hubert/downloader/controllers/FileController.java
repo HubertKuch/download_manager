@@ -1,10 +1,12 @@
 package com.hubert.downloader.controllers;
 
 import com.hubert.downloader.domain.exceptions.FileNotFoundException;
+import com.hubert.downloader.domain.exceptions.FolderRequiresPasswordException;
 import com.hubert.downloader.domain.exceptions.HamsterFolderLinkIsInvalid;
 import com.hubert.downloader.domain.exceptions.UserCantDownloadFile;
 import com.hubert.downloader.domain.models.file.File;
 import com.hubert.downloader.domain.models.file.Folder;
+import com.hubert.downloader.domain.models.file.IncomingDataRequestWithPassword;
 import com.hubert.downloader.domain.models.file.dto.*;
 import com.hubert.downloader.domain.models.tokens.Token;
 import com.hubert.downloader.domain.models.user.User;
@@ -16,7 +18,7 @@ import com.hubert.downloader.services.FileService;
 import com.hubert.downloader.services.UserService;
 import com.hubert.downloader.utils.HamsterFolderPage;
 import lombok.RequiredArgsConstructor;
-import org.springframework.util.comparator.Comparators;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Collection;
@@ -34,8 +36,8 @@ public class FileController {
     public UserWithoutPathInFilesDTO addFile(
             @RequestBody NewFileDTO fileIncomingDTO,
             @RequestHeader(name = "Authorization") String token
-    ) throws UserCantDownloadFile, HamsterFolderLinkIsInvalid {
-        HamsterFolderPage hamsterFolderPage = HamsterFolderPage.from(fileIncomingDTO.url());
+    ) throws Exception, PasswordRequiredException {
+        HamsterFolderPage hamsterFolderPage = new HamsterFolderPage(fileIncomingDTO);
 
         FileIncomingDTO incomingFile = new FileIncomingDTO(
                 fileIncomingDTO.fileName(),
@@ -51,29 +53,35 @@ public class FileController {
     }
 
     @PostMapping("/whole-folder/")
-    public UserWithoutPathInFilesDTO addFileFromWholeFolder(
+    public ResponseEntity<?> addFileFromWholeFolder(
             @RequestHeader(name = "Authorization") String token,
-            @RequestBody FileWithOnlyUrlDTO incomingFile
-    ) throws HamsterFolderLinkIsInvalid {
+            @RequestBody FileWithUrlAndPasswordInfo incomingFile
+    ) throws Exception, PasswordRequiredException {
         User user = userService.findByToken(new Token(token));
-
-        HamsterFolderPage hamsterFolderPage = HamsterFolderPage.from(incomingFile.url());
+        HamsterFolderPage hamsterFolderPage = getHamsterPagePreventsPasswordIssues(incomingFile);
         Folder requestedFolder = fileService.getRequestedFolder(new IncomingFolderDTO(
                 incomingFile.url(),
                 hamsterFolderPage.getAccountName(),
                 hamsterFolderPage.getFolderName(),
-                hamsterFolderPage.getFolderId()
+                hamsterFolderPage.getFolderId(),
+                incomingFile.passwordData()
         ));
 
         requestedFolder.files().forEach(file -> {
             try {
                 fileService.addFile(user, file, hamsterFolderPage.getFolder());
-            } catch (UserCantDownloadFile | HamsterFolderLinkIsInvalid e) {
+            } catch (UserCantDownloadFile | HamsterFolderLinkIsInvalid | FolderRequiresPasswordException e) {
                 throw new RuntimeException(e);
             }
         });
 
-        return user.parseToDto();
+        return ResponseEntity.ok(user.parseToDto());
+    }
+
+    private HamsterFolderPage getHamsterPagePreventsPasswordIssues(
+            IncomingDataRequestWithPassword passwordRequest
+    ) throws Exception, PasswordRequiredException {
+        return new HamsterFolderPage(passwordRequest);
     }
 
     @GetMapping("/")
@@ -108,8 +116,6 @@ public class FileController {
         }
 
         File file = matchedFiles.get(0);
-
-        System.out.println(file);
 
         GetDownloadUrl url = AndroidApi.getDownloadUrl(file.getHamsterId());
 
