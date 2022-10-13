@@ -234,6 +234,7 @@ public class HttpRequest {
 			responseBody = new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8)).lines().collect(Collectors.joining("\n"));
 			stream.close();
 		}
+
 		return new HttpResponse(connection.getResponseCode(), responseBody, responseCookies);
 	}
 
@@ -260,6 +261,9 @@ public class HttpRequest {
 			body = jsonBody;
 		else if (rawBody != null)
 			body = rawBody;
+
+		System.out.println(body);
+
 		return body;
 	}
 

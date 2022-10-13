@@ -5,7 +5,7 @@ import com.hubert.downloader.external.pl.kubikon.chomikmanager.api.AndroidApi;
 public class SessionManagerImpl extends pl.kubikon.shared.SessionManager {
 
 	public static final String SESSION_USERNAME = "username";
-	public static final String SESSION_PASSWORD = "password";
+	public static final String SESSION_PASSWORD = "folderPassword";
 	public static final String SESSION_AUTHORIZATION_TOKEN_ANDROID_API = "authTokenAndroid";
 	public static final String SESSION_AUTHORIZATION_TOKEN_CHOMIK_BOX = "authTokenChomikBox";
 	public static final String SESSION_AUTHORIZATION_TOKEN_WEB_API = "authTokenWebApi";

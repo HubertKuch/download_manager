@@ -17,10 +17,8 @@ import com.hubert.downloader.external.coreapplication.modelsgson.GetDownloadUrl;
 import com.hubert.downloader.external.coreapplication.requestsgson.async.PasswordRequiredException;
 import com.hubert.downloader.external.pl.kubikon.chomikmanager.api.AndroidApi;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
@@ -30,20 +28,6 @@ import java.util.UUID;
 public class FileService {
     private final UserService userService;
     private final FileValidator fileValidator;
-    @Value("${android.hamster.credentials.username}")
-    private String username;
-    @Value("${android.hamster.credentials.password}")
-    private String password;
-
-    @PostConstruct
-    public void preLoginToHamster() {
-        try {
-            AndroidApi.login(username, password);
-        } catch (Exception | PasswordRequiredException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
 
     public File getRequestedFile(FileIncomingDTO fileIncomingDTO) {
         try {
@@ -77,9 +61,8 @@ public class FileService {
 
     public Folder getRequestedFolder(IncomingFolderDTO incomingFolderDTO) {
         try {
-            AndroidApi.login(username, password);
             AccountsListItem account = AndroidApi.searchForAccount(incomingFolderDTO.account());
-            FolderDownload folder = AndroidApi.getFolderDownload(account.getAccountId(), incomingFolderDTO.folderId(), "");
+            FolderDownload folder = AndroidApi.getFolderDownload(account.getAccountId(), incomingFolderDTO.folderId(), incomingFolderDTO.name());
 
             List<FolderDownloadChFile> requestedFiles = folder.files;
 

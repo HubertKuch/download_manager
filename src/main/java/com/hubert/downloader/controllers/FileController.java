@@ -1,5 +1,6 @@
 package com.hubert.downloader.controllers;
 
+import com.hubert.downloader.builders.HamsterPageBuilder;
 import com.hubert.downloader.domain.exceptions.FileNotFoundException;
 import com.hubert.downloader.domain.exceptions.FolderRequiresPasswordException;
 import com.hubert.downloader.domain.exceptions.HamsterFolderLinkIsInvalid;
@@ -9,14 +10,16 @@ import com.hubert.downloader.domain.models.file.Folder;
 import com.hubert.downloader.domain.models.file.IncomingDataRequestWithPassword;
 import com.hubert.downloader.domain.models.file.dto.*;
 import com.hubert.downloader.domain.models.tokens.Token;
+import com.hubert.downloader.domain.models.user.HamsterUser;
 import com.hubert.downloader.domain.models.user.User;
 import com.hubert.downloader.domain.models.user.dto.UserWithoutPathInFilesDTO;
 import com.hubert.downloader.external.coreapplication.modelsgson.GetDownloadUrl;
 import com.hubert.downloader.external.coreapplication.requestsgson.async.PasswordRequiredException;
-import com.hubert.downloader.external.pl.kubikon.chomikmanager.api.AndroidApi;
+import com.hubert.downloader.external.pl.kubikon.chomikmanager.api.*;
 import com.hubert.downloader.services.FileService;
 import com.hubert.downloader.services.UserService;
 import com.hubert.downloader.utils.HamsterFolderPage;
+import com.hubert.downloader.utils.HamsterUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -31,13 +34,14 @@ import java.util.List;
 public class FileController {
     private final FileService fileService;
     private final UserService userService;
+    private final HamsterPageBuilder hamsterPageBuilder;
 
     @PostMapping("/")
     public UserWithoutPathInFilesDTO addFile(
             @RequestBody NewFileDTO fileIncomingDTO,
             @RequestHeader(name = "Authorization") String token
-    ) throws Exception, PasswordRequiredException {
-        HamsterFolderPage hamsterFolderPage = new HamsterFolderPage(fileIncomingDTO);
+    ) throws PasswordRequiredException, Exception {
+        HamsterFolderPage hamsterFolderPage = getHamsterPagePreventsPasswordIssues(fileIncomingDTO);
 
         FileIncomingDTO incomingFile = new FileIncomingDTO(
                 fileIncomingDTO.fileName(),
@@ -53,12 +57,13 @@ public class FileController {
     }
 
     @PostMapping("/whole-folder/")
-    public ResponseEntity<?> addFileFromWholeFolder(
+    public UserWithoutPathInFilesDTO addFileFromWholeFolder(
             @RequestHeader(name = "Authorization") String token,
             @RequestBody FileWithUrlAndPasswordInfo incomingFile
     ) throws Exception, PasswordRequiredException {
         User user = userService.findByToken(new Token(token));
         HamsterFolderPage hamsterFolderPage = getHamsterPagePreventsPasswordIssues(incomingFile);
+
         Folder requestedFolder = fileService.getRequestedFolder(new IncomingFolderDTO(
                 incomingFile.url(),
                 hamsterFolderPage.getAccountName(),
@@ -75,13 +80,13 @@ public class FileController {
             }
         });
 
-        return ResponseEntity.ok(user.parseToDto());
+        return user.parseToDto();
     }
 
     private HamsterFolderPage getHamsterPagePreventsPasswordIssues(
             IncomingDataRequestWithPassword passwordRequest
     ) throws Exception, PasswordRequiredException {
-        return new HamsterFolderPage(passwordRequest);
+        return hamsterPageBuilder.buildPage(passwordRequest);
     }
 
     @GetMapping("/")
