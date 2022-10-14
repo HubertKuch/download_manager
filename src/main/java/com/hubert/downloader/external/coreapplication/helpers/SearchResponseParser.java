@@ -10,8 +10,6 @@ import java.util.ArrayList;
 public class SearchResponseParser {
 
 	public static ArrayList<AccountsListItem> parseAccountsJsonToArrayList(JSONObject jsonObject) {
-
-		System.out.println(jsonObject);
 		JSONArray array = jsonObject.getJSONArray("Results");
 		ArrayList<AccountsListItem> list = new ArrayList<>();
 		int length = array.length();

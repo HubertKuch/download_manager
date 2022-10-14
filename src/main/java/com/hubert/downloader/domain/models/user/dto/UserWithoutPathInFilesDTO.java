@@ -2,6 +2,7 @@ package com.hubert.downloader.domain.models.user.dto;
 
 import com.hubert.downloader.domain.Transfer;
 import com.hubert.downloader.domain.models.file.dto.FolderWithFilesWithoutPaths;
+import com.hubert.downloader.domain.models.history.History;
 import com.hubert.downloader.domain.models.user.UserRole;
 
 import java.util.Date;
@@ -15,5 +16,6 @@ public record UserWithoutPathInFilesDTO(
         List<FolderWithFilesWithoutPaths> folders,
         UserRole role,
         Date expiringDate,
-        Boolean hasActiveAccount
+        Boolean hasActiveAccount,
+        List<History> histories
 ) {}

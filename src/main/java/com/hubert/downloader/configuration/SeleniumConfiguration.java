@@ -19,7 +19,7 @@ public class SeleniumConfiguration {
     public ChromeDriver chromeDriver() {
         ChromeOptions chromeOptions = new ChromeOptions();
 
-//        chromeOptions.addArguments("--headless");
+        chromeOptions.addArguments("--headless");
 
         return new ChromeDriver(chromeOptions);
     }

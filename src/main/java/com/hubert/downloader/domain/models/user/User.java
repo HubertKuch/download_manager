@@ -7,6 +7,7 @@ import com.hubert.downloader.domain.Transfer;
 import com.hubert.downloader.domain.models.file.File;
 import com.hubert.downloader.domain.models.file.Folder;
 import com.hubert.downloader.domain.models.file.dto.FolderWithFilesWithoutPaths;
+import com.hubert.downloader.domain.models.history.History;
 import com.hubert.downloader.domain.models.user.dto.NewUserDTO;
 import com.hubert.downloader.domain.models.user.dto.UserWithoutPathInFilesDTO;
 import lombok.*;
@@ -39,12 +40,15 @@ public class User {
     private Date expiringDate;
     @Field
     private Boolean hasActiveAccount;
+    @Field(name = "histories", write = Field.Write.ALWAYS)
+    private List<History> histories;
 
     public User(Transfer transfer, UserRole role, Date expiringDate) {
         this.transfer = transfer;
         this.role = role;
         this.expiringDate = expiringDate;
         this.accessCode = UUID.randomUUID().toString();
+        this.histories = new ArrayList<>();
     }
 
     public User(String accessCode, Transfer transfer, List<Folder> folders, UserRole role, Date expiringDate) {
@@ -53,6 +57,7 @@ public class User {
         this.folders = folders == null ? new ArrayList<>() : folders;
         this.role = role;
         this.expiringDate = expiringDate;
+        this.histories = new ArrayList<>();
     }
 
     public static User fromDTO(NewUserDTO userDTO) {
@@ -75,8 +80,6 @@ public class User {
 
     public void addFile(Folder folder, File file) {
         if (folders == null) folders = List.of();
-
-        System.out.println(folder.name());
 
         List<Folder> matchedFolders = this.folders.stream()
                 .filter(userFolder -> userFolder.name().equals(folder.name()))
@@ -131,7 +134,20 @@ public class User {
                 parsedFolders,
                 role,
                 expiringDate,
-                hasActiveAccount
+                hasActiveAccount,
+                histories
         );
+    }
+
+    public void addHistoryOfDownloadedFiles(List<File> downloadedFiles) {
+        if (this.histories == null) this.histories = new ArrayList<>();
+
+        this.histories.add(History.ofDownloadedFiles(downloadedFiles));
+    }
+
+    public void addHistoryOfAddedFiles(List<File> addedFiles) {
+        if (this.histories == null) this.histories = new ArrayList<>();
+
+        this.histories.add(History.ofAddedFiles(addedFiles));
     }
 }

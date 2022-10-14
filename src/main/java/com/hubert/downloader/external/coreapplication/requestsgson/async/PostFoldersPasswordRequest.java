@@ -30,8 +30,6 @@ public class PostFoldersPasswordRequest extends BaseGsonRequest<ApiError> {
 		body.put(FOLDER_ID, folderId);
 		body.put(PASSWORD, password);
 
-        System.out.println(httpRequest.getBody());
-
 		httpRequest.setBodyJson(body);
 	}
 

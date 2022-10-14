@@ -19,8 +19,8 @@ public record Folder(
         String account,
         String name,
         List<File> files,
-        Date addedAt,
-        PasswordData passwordData
+        Date addedAt
+        //PasswordData passwordData
 ) {
 
     public static Folder from(IncomingFolderDTO incomingFolderDTO, List<FolderDownloadChFile> requestedFiles) {
@@ -41,8 +41,8 @@ public record Folder(
                         throw new RuntimeException(e);
                     }
                 }).toList(),
-                new Date(System.currentTimeMillis()),
-                incomingFolderDTO.passwordData()
+                new Date(System.currentTimeMillis())
+                //incomingFolderDTO.passwordData()
         );
     }
 
