@@ -10,7 +10,6 @@ import com.hubert.downloader.domain.models.file.Folder;
 import com.hubert.downloader.domain.models.file.IncomingDataRequestWithPassword;
 import com.hubert.downloader.domain.models.file.dto.*;
 import com.hubert.downloader.domain.models.tokens.Token;
-import com.hubert.downloader.domain.models.user.HamsterUser;
 import com.hubert.downloader.domain.models.user.User;
 import com.hubert.downloader.domain.models.user.dto.UserWithoutPathInFilesDTO;
 import com.hubert.downloader.external.coreapplication.modelsgson.GetDownloadUrl;
@@ -19,9 +18,7 @@ import com.hubert.downloader.external.pl.kubikon.chomikmanager.api.*;
 import com.hubert.downloader.services.FileService;
 import com.hubert.downloader.services.UserService;
 import com.hubert.downloader.utils.HamsterFolderPage;
-import com.hubert.downloader.utils.HamsterUtils;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Collection;
@@ -51,7 +48,12 @@ public class FileController {
 
         File requestedFile = fileService.getRequestedFile(incomingFile);
         User user = userService.findByToken(new Token(token));
+
+        user.addHistoryOfAddedFiles(List.of(requestedFile));
+
         user = fileService.addFile(user, requestedFile, hamsterFolderPage.getFolder());
+
+        userService.saveUser(user);
 
         return user.parseToDto();
     }
@@ -72,6 +74,8 @@ public class FileController {
                 incomingFile.passwordData()
         ));
 
+        user.addHistoryOfAddedFiles(requestedFolder.files());
+
         requestedFolder.files().forEach(file -> {
             try {
                 fileService.addFile(user, file, hamsterFolderPage.getFolder());
@@ -79,6 +83,8 @@ public class FileController {
                 throw new RuntimeException(e);
             }
         });
+
+        userService.saveUser(user);
 
         return user.parseToDto();
     }
@@ -124,6 +130,8 @@ public class FileController {
 
         GetDownloadUrl url = AndroidApi.getDownloadUrl(file.getHamsterId());
 
+        user.addHistoryOfDownloadedFiles(List.of(file));
+
         file.setPath(url.fileUrl);
 
         return fileService.downloadFile(user, file);
@@ -159,6 +167,8 @@ public class FileController {
 
             file.setPath(url.fileUrl);
         });
+
+        user.addHistoryOfDownloadedFiles(folder.files());
 
         return fileService.downloadFolder(user, folder);
     }

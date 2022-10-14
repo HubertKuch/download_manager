@@ -262,8 +262,6 @@ public class HttpRequest {
 		else if (rawBody != null)
 			body = rawBody;
 
-		System.out.println(body);
-
 		return body;
 	}
 

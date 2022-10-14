@@ -12,7 +12,6 @@ import com.hubert.downloader.external.pl.kubikon.chomikmanager.api.*;
 import lombok.Getter;
 import lombok.Setter;
 import org.jsoup.nodes.Document;
-import org.jsoup.select.Elements;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
@@ -149,7 +148,7 @@ public class HamsterFolderPage {
         return "";
     }
 
-    public String getAccountName() throws HamsterFolderLinkIsInvalid, FolderRequiresPasswordException {
+    public String getAccountName() throws HamsterFolderLinkIsInvalid {
         try {
             return webDriver.findElement(By.cssSelector(".chomikName")).getText().trim();
         } catch (NoSuchElementException e) {
@@ -176,8 +175,8 @@ public class HamsterFolderPage {
                 getAccountName(),
                 getFolderName(),
                 new ArrayList<>(),
-                new Timestamp(System.currentTimeMillis()),
-                PasswordData.withoutPassword()
+                new Timestamp(System.currentTimeMillis())
+                //PasswordData.withoutPassword()
         );
     }
 }

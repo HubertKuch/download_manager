@@ -23,7 +23,6 @@ public abstract class BaseGsonRequest<T> {
 
 	public BaseGsonRequest(String uri, Class<T> valueType) {
 		this.url = AndroidApi.BASE_URL + uri;
-        System.out.println(this.url);
 		this.valueType = valueType;
 		httpRequest = new HttpRequest(url).setLogEnabled();
 	}
@@ -62,9 +61,6 @@ public abstract class BaseGsonRequest<T> {
 		Map<String, String> headers = new HashMap<>();
 		headers.put("Token", signRequest(httpRequest));
 		headers.put("User-Agent", "android/3.5 (" + AndroidApi.getDeviceId() + "; Samsung SM-G991)");
-
-        System.out.println(headers.get("Token"));
-        System.out.println(headers.get("User-Agent"));
 
 		return headers;
 	}
