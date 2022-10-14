@@ -1,6 +1,7 @@
 package com.hubert.downloader.domain.models.history;
 
 import com.hubert.downloader.domain.models.file.File;
+import com.hubert.downloader.domain.models.file.Folder;
 
 import java.util.Date;
 import java.util.List;
@@ -45,6 +46,10 @@ public record History(
                 HistoryType.DELETE_FOLDER,
                 new Date(System.currentTimeMillis())
         );
+    }
+
+    public static History ofDeletedFolder(Folder folder) {
+        return ofDeletedFolder(folder.files());
     }
 
     public static History ofDeletedFile(File file) {

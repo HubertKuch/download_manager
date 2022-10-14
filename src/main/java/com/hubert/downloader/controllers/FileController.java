@@ -11,6 +11,7 @@ import com.hubert.downloader.domain.models.tokens.Token;
 import com.hubert.downloader.domain.models.user.User;
 import com.hubert.downloader.domain.models.user.dto.UserWithoutPathInFilesDTO;
 import com.hubert.downloader.domain.responses.RemovedFileReponse;
+import com.hubert.downloader.domain.responses.RemovedFolderResponse;
 import com.hubert.downloader.external.coreapplication.modelsgson.GetDownloadUrl;
 import com.hubert.downloader.external.coreapplication.requestsgson.async.PasswordRequiredException;
 import com.hubert.downloader.external.pl.kubikon.chomikmanager.api.*;
@@ -197,5 +198,27 @@ public class FileController {
         userService.saveUser(user);
 
         return new RemovedFileReponse("File removed successfully.", file);
+    }
+
+    @DeleteMapping("/folder/")
+    public RemovedFolderResponse removeFolder(
+            @RequestHeader(name = "Authorization") String token,
+            @RequestBody FolderToRemoveDTO fileToDeleteDTO
+    ) throws InvalidRequestDataException {
+        User user = userService.findByToken(new Token(token));
+        Optional<Folder> optionalFolder = fileService.findFolderById(user, fileToDeleteDTO.folderId());
+
+        if (optionalFolder.isEmpty()) {
+            throw new InvalidRequestDataException("Invalid request data. File or optionalFolder id are incorrect.");
+        }
+
+        Folder folder = optionalFolder.get();
+
+        fileService.removeFolder(user, folder);
+        user.addHistory(History.ofDeletedFolder(folder));
+
+        userService.saveUser(user);
+
+        return new RemovedFolderResponse("Folder removed successfully.", folder);
     }
 }
