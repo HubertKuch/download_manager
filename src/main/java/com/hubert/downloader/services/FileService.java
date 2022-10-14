@@ -3,6 +3,7 @@ package com.hubert.downloader.services;
 import com.hubert.downloader.domain.InformationSize;
 import com.hubert.downloader.domain.InformationUnit;
 import com.hubert.downloader.domain.exceptions.FileNotFoundException;
+import com.hubert.downloader.domain.exceptions.InvalidRequestDataException;
 import com.hubert.downloader.domain.exceptions.UserCantDownloadFile;
 import com.hubert.downloader.domain.models.file.Folder;
 import com.hubert.downloader.domain.models.file.dto.FileIncomingDTO;
@@ -21,6 +22,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.UUID;
 
 @Component
@@ -35,10 +37,10 @@ public class FileService {
             FolderDownload folder = AndroidApi.getFolderDownload(account.getAccountId(), fileIncomingDTO.folderId(), "");
 
             List<FolderDownloadChFile> requestedFile = folder
-                            .files
-                            .stream()
-                            .filter(file -> Objects.equals(file.getName(), fileIncomingDTO.file()))
-                            .toList();
+                    .files
+                    .stream()
+                    .filter(file -> Objects.equals(file.getName(), fileIncomingDTO.file()))
+                    .toList();
 
             if (requestedFile.isEmpty()) {
                 throw new FileNotFoundException("File not found");
@@ -51,8 +53,8 @@ public class FileService {
                     fileIncomingDTO.file(),
                     downloadUrl.fileUrl,
                     new InformationSize(
-                        InformationUnit.KILO_BYTE,
-                        requestedFile.get(0).size
+                            InformationUnit.KILO_BYTE,
+                            requestedFile.get(0).size
                     ));
         } catch (Exception | PasswordRequiredException e) {
             throw new RuntimeException(e);
@@ -75,7 +77,7 @@ public class FileService {
     public User addFile(final User user, final File file, final Folder folder) throws UserCantDownloadFile {
         boolean userCanDownloadFile = fileValidator.userCanDownloadAFile(user, file);
 
-        if(!userCanDownloadFile) {
+        if (!userCanDownloadFile) {
             throw new UserCantDownloadFile("User doesn't have enough transfer to download a file.");
         }
 
@@ -88,7 +90,7 @@ public class FileService {
     public File downloadFile(final User user, final File file) throws UserCantDownloadFile {
         boolean userCanDownloadFile = fileValidator.userCanDownloadAFile(user, file);
 
-        if(!userCanDownloadFile) {
+        if (!userCanDownloadFile) {
             throw new UserCantDownloadFile("User doesn't have enough transfer to download a file.");
         }
 
@@ -104,7 +106,7 @@ public class FileService {
     public Folder downloadFolder(final User user, final Folder folder) throws UserCantDownloadFile {
         boolean isCanDownloadAFolder = fileValidator.userCanDownloadAFolder(user, folder);
 
-        if(!isCanDownloadAFolder) {
+        if (!isCanDownloadAFolder) {
             throw new UserCantDownloadFile("User doesn't have enough transfer to download a file.");
         }
 
@@ -115,5 +117,38 @@ public class FileService {
         userService.saveUser(user);
 
         return folder;
+    }
+
+    public Optional<Folder> findFolderById(User user, String id) {
+        List<Folder> matchedFolders = user.getFolders().stream().filter(folder -> folder.id().equals(id)).toList();
+
+        if (matchedFolders.isEmpty()) {
+            return Optional.empty();
+        }
+
+        return Optional.of(matchedFolders.get(0));
+    }
+
+    public Optional<File> findFileById(User user, String id) {
+        List<File> matchedFiles = user
+                .getFolders()
+                .stream()
+                .flatMap(folder -> folder.files().stream())
+                .filter(file -> file.getId().toString().equals(id))
+                .toList();
+
+        if (matchedFiles.isEmpty()) {
+            return Optional.empty();
+        }
+
+        return Optional.of(matchedFiles.get(0));
+    }
+
+    public void removeFolder(User user, Folder folder) {
+        user.removeFolder(folder);
+    }
+
+    public void removeFile(User user, Folder folder, File file) throws InvalidRequestDataException {
+        user.removeFile(folder, file);
     }
 }

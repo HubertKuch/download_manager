@@ -1,17 +1,16 @@
 package com.hubert.downloader.controllers;
 
 import com.hubert.downloader.builders.HamsterPageBuilder;
-import com.hubert.downloader.domain.exceptions.FileNotFoundException;
-import com.hubert.downloader.domain.exceptions.FolderRequiresPasswordException;
-import com.hubert.downloader.domain.exceptions.HamsterFolderLinkIsInvalid;
-import com.hubert.downloader.domain.exceptions.UserCantDownloadFile;
+import com.hubert.downloader.domain.exceptions.*;
 import com.hubert.downloader.domain.models.file.File;
 import com.hubert.downloader.domain.models.file.Folder;
 import com.hubert.downloader.domain.models.file.IncomingDataRequestWithPassword;
 import com.hubert.downloader.domain.models.file.dto.*;
+import com.hubert.downloader.domain.models.history.History;
 import com.hubert.downloader.domain.models.tokens.Token;
 import com.hubert.downloader.domain.models.user.User;
 import com.hubert.downloader.domain.models.user.dto.UserWithoutPathInFilesDTO;
+import com.hubert.downloader.domain.responses.RemovedFileReponse;
 import com.hubert.downloader.external.coreapplication.modelsgson.GetDownloadUrl;
 import com.hubert.downloader.external.coreapplication.requestsgson.async.PasswordRequiredException;
 import com.hubert.downloader.external.pl.kubikon.chomikmanager.api.*;
@@ -24,6 +23,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequiredArgsConstructor
@@ -49,7 +49,7 @@ public class FileController {
         File requestedFile = fileService.getRequestedFile(incomingFile);
         User user = userService.findByToken(new Token(token));
 
-        user.addHistoryOfAddedFiles(List.of(requestedFile));
+        user.addHistory(History.ofAddedFiles(requestedFile));
 
         user = fileService.addFile(user, requestedFile, hamsterFolderPage.getFolder());
 
@@ -74,7 +74,7 @@ public class FileController {
                 incomingFile.passwordData()
         ));
 
-        user.addHistoryOfAddedFiles(requestedFolder.files());
+        user.addHistory(History.ofAddedFiles(requestedFolder.files()));
 
         requestedFolder.files().forEach(file -> {
             try {
@@ -130,7 +130,7 @@ public class FileController {
 
         GetDownloadUrl url = AndroidApi.getDownloadUrl(file.getHamsterId());
 
-        user.addHistoryOfDownloadedFiles(List.of(file));
+        user.addHistory(History.ofDownloadedFiles(file));
 
         file.setPath(url.fileUrl);
 
@@ -168,8 +168,34 @@ public class FileController {
             file.setPath(url.fileUrl);
         });
 
-        user.addHistoryOfDownloadedFiles(folder.files());
+        user.addHistory(History.ofDownloadedFiles(folder.files()));
+
+        userService.saveUser(user);
 
         return fileService.downloadFolder(user, folder);
+    }
+
+    @DeleteMapping("/file/")
+    public RemovedFileReponse removeFile(
+            @RequestHeader(name = "Authorization") String token,
+            @RequestBody FileToDeleteDTO fileToDeleteDTO
+    ) throws InvalidRequestDataException {
+        User user = userService.findByToken(new Token(token));
+        Optional<Folder> optionalFolder = fileService.findFolderById(user, fileToDeleteDTO.folderId());
+        Optional<File> optionalFile = fileService.findFileById(user, fileToDeleteDTO.fileId());
+
+        if (optionalFolder.isEmpty() || optionalFile.isEmpty()) {
+            throw new InvalidRequestDataException("Invalid request data. File or optionalFolder id are incorrect.");
+        }
+
+        Folder folder = optionalFolder.get();
+        File file = optionalFile.get();
+
+        fileService.removeFile(user, folder, file);
+        user.addHistory(History.ofDeletedFile(file));
+
+        userService.saveUser(user);
+
+        return new RemovedFileReponse("File removed successfully.", file);
     }
 }

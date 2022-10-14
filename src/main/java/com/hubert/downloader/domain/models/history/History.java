@@ -21,11 +21,37 @@ public record History(
         );
     }
 
+    public static History ofDownloadedFiles(File file) {
+        return ofDownloadedFiles(List.of(file));
+    }
+
     public static History ofAddedFiles(List<File> downloadedFiles) {
         return new History(
                 UUID.randomUUID(),
                 downloadedFiles,
                 HistoryType.ADDED,
+                new Date(System.currentTimeMillis())
+        );
+    }
+
+    public static History ofAddedFiles(File file) {
+        return History.ofAddedFiles(List.of(file));
+    }
+
+    public static History ofDeletedFolder(List<File> deletedFolder) {
+        return new History(
+                UUID.randomUUID(),
+                deletedFolder,
+                HistoryType.DELETE_FOLDER,
+                new Date(System.currentTimeMillis())
+        );
+    }
+
+    public static History ofDeletedFile(File file) {
+        return new History(
+                UUID.randomUUID(),
+                List.of(file),
+                HistoryType.DELETE_FILE,
                 new Date(System.currentTimeMillis())
         );
     }

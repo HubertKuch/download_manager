@@ -59,7 +59,7 @@ public record Folder(
                                 file.getExtension(),
                                 file.getSize()
                         )).toList(),
-                addedAt
+                addedAt == null ?  new Date() : addedAt
         );
     }
 }
