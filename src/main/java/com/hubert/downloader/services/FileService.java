@@ -3,6 +3,7 @@ package com.hubert.downloader.services;
 import com.hubert.downloader.domain.InformationSize;
 import com.hubert.downloader.domain.InformationUnit;
 import com.hubert.downloader.domain.exceptions.FileNotFoundException;
+import com.hubert.downloader.domain.exceptions.InvalidRequestDataException;
 import com.hubert.downloader.domain.exceptions.UserCantDownloadFile;
 import com.hubert.downloader.domain.models.file.Folder;
 import com.hubert.downloader.domain.models.file.dto.FileIncomingDTO;
@@ -17,11 +18,11 @@ import com.hubert.downloader.external.coreapplication.modelsgson.GetDownloadUrl;
 import com.hubert.downloader.external.coreapplication.requestsgson.async.PasswordRequiredException;
 import com.hubert.downloader.external.pl.kubikon.chomikmanager.api.AndroidApi;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.UUID;
 
 @Component
@@ -29,22 +30,17 @@ import java.util.UUID;
 public class FileService {
     private final UserService userService;
     private final FileValidator fileValidator;
-    @Value("${android.hamster.credentials.username}")
-    private String username;
-    @Value("${android.hamster.credentials.password}")
-    private String password;
 
     public File getRequestedFile(FileIncomingDTO fileIncomingDTO) {
         try {
-            AndroidApi.login(username, password);
             AccountsListItem account = AndroidApi.searchForAccount(fileIncomingDTO.account());
             FolderDownload folder = AndroidApi.getFolderDownload(account.getAccountId(), fileIncomingDTO.folderId(), "");
 
             List<FolderDownloadChFile> requestedFile = folder
-                            .files
-                            .stream()
-                            .filter(file -> Objects.equals(file.getName(), fileIncomingDTO.file()))
-                            .toList();
+                    .files
+                    .stream()
+                    .filter(file -> Objects.equals(file.getName(), fileIncomingDTO.file()))
+                    .toList();
 
             if (requestedFile.isEmpty()) {
                 throw new FileNotFoundException("File not found");
@@ -57,8 +53,8 @@ public class FileService {
                     fileIncomingDTO.file(),
                     downloadUrl.fileUrl,
                     new InformationSize(
-                        InformationUnit.KILO_BYTE,
-                        requestedFile.get(0).size
+                            InformationUnit.KILO_BYTE,
+                            requestedFile.get(0).size
                     ));
         } catch (Exception | PasswordRequiredException e) {
             throw new RuntimeException(e);
@@ -67,30 +63,12 @@ public class FileService {
 
     public Folder getRequestedFolder(IncomingFolderDTO incomingFolderDTO) {
         try {
-            AndroidApi.login(username, password);
             AccountsListItem account = AndroidApi.searchForAccount(incomingFolderDTO.account());
-            FolderDownload folder = AndroidApi.getFolderDownload(account.getAccountId(), incomingFolderDTO.folderId(), "");
+            FolderDownload folder = AndroidApi.getFolderDownload(account.getAccountId(), incomingFolderDTO.folderId(), incomingFolderDTO.name());
 
             List<FolderDownloadChFile> requestedFiles = folder.files;
 
-            return new Folder(
-                    incomingFolderDTO.folderId(),
-                    incomingFolderDTO.url(),
-                    incomingFolderDTO.account(),
-                    incomingFolderDTO.name(),
-                    requestedFiles.stream().map(file -> {
-                        try {
-                            return new File(
-                                    requestedFiles.get(0).fileId,
-                                    file.fileName,
-                                    AndroidApi.getDownloadUrl(file.getId()).fileUrl,
-                                    new InformationSize(InformationUnit.KILO_BYTE, file.size)
-                            );
-                        } catch (Exception | PasswordRequiredException e) {
-                            throw new RuntimeException(e);
-                        }
-                    }).toList()
-            );
+            return Folder.from(incomingFolderDTO, requestedFiles);
         } catch (Exception | PasswordRequiredException e) {
             throw new RuntimeException(e);
         }
@@ -99,7 +77,7 @@ public class FileService {
     public User addFile(final User user, final File file, final Folder folder) throws UserCantDownloadFile {
         boolean userCanDownloadFile = fileValidator.userCanDownloadAFile(user, file);
 
-        if(!userCanDownloadFile) {
+        if (!userCanDownloadFile) {
             throw new UserCantDownloadFile("User doesn't have enough transfer to download a file.");
         }
 
@@ -112,7 +90,7 @@ public class FileService {
     public File downloadFile(final User user, final File file) throws UserCantDownloadFile {
         boolean userCanDownloadFile = fileValidator.userCanDownloadAFile(user, file);
 
-        if(!userCanDownloadFile) {
+        if (!userCanDownloadFile) {
             throw new UserCantDownloadFile("User doesn't have enough transfer to download a file.");
         }
 
@@ -128,7 +106,7 @@ public class FileService {
     public Folder downloadFolder(final User user, final Folder folder) throws UserCantDownloadFile {
         boolean isCanDownloadAFolder = fileValidator.userCanDownloadAFolder(user, folder);
 
-        if(!isCanDownloadAFolder) {
+        if (!isCanDownloadAFolder) {
             throw new UserCantDownloadFile("User doesn't have enough transfer to download a file.");
         }
 
@@ -139,5 +117,38 @@ public class FileService {
         userService.saveUser(user);
 
         return folder;
+    }
+
+    public Optional<Folder> findFolderById(User user, String id) {
+        List<Folder> matchedFolders = user.getFolders().stream().filter(folder -> folder.id().equals(id)).toList();
+
+        if (matchedFolders.isEmpty()) {
+            return Optional.empty();
+        }
+
+        return Optional.of(matchedFolders.get(0));
+    }
+
+    public Optional<File> findFileById(User user, String id) {
+        List<File> matchedFiles = user
+                .getFolders()
+                .stream()
+                .flatMap(folder -> folder.files().stream())
+                .filter(file -> file.getId().toString().equals(id))
+                .toList();
+
+        if (matchedFiles.isEmpty()) {
+            return Optional.empty();
+        }
+
+        return Optional.of(matchedFiles.get(0));
+    }
+
+    public void removeFolder(User user, Folder folder) {
+        user.removeFolder(folder);
+    }
+
+    public void removeFile(User user, Folder folder, File file) throws InvalidRequestDataException {
+        user.removeFile(folder, file);
     }
 }

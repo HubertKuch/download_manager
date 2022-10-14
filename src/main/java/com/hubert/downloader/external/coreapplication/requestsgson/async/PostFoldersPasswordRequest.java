@@ -12,7 +12,7 @@ public class PostFoldersPasswordRequest extends BaseGsonRequest<ApiError> {
 	public static final int ERROR_WRONG_PASSWORD = 1;
 	private static final String FOLDER_ID = "FolderId";
 	public static final String PASSWORD = "Password";
-	public static final String PATH = "/folders/password";
+	public static final String PATH = "/folders/folderPassword";
 
 	private final String accountId, folderId, password;
 
@@ -29,6 +29,7 @@ public class PostFoldersPasswordRequest extends BaseGsonRequest<ApiError> {
 		body.put(ACCOUNT_ID, accountId);
 		body.put(FOLDER_ID, folderId);
 		body.put(PASSWORD, password);
+
 		httpRequest.setBodyJson(body);
 	}
 

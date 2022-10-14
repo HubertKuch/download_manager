@@ -4,9 +4,11 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.hubert.downloader.domain.InformationSize;
 import com.hubert.downloader.domain.InformationUnit;
 import com.hubert.downloader.domain.Transfer;
+import com.hubert.downloader.domain.exceptions.InvalidRequestDataException;
 import com.hubert.downloader.domain.models.file.File;
 import com.hubert.downloader.domain.models.file.Folder;
 import com.hubert.downloader.domain.models.file.dto.FolderWithFilesWithoutPaths;
+import com.hubert.downloader.domain.models.history.History;
 import com.hubert.downloader.domain.models.user.dto.NewUserDTO;
 import com.hubert.downloader.domain.models.user.dto.UserWithoutPathInFilesDTO;
 import lombok.*;
@@ -18,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Data
 @Document
@@ -35,24 +38,28 @@ public class User {
     @Field
     private UserRole role;
     @Field
-    @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date expiringDate;
     @Field
     private Boolean hasActiveAccount;
+    @Field(name = "histories", write = Field.Write.ALWAYS)
+    private List<History> histories;
 
     public User(Transfer transfer, UserRole role, Date expiringDate) {
         this.transfer = transfer;
         this.role = role;
         this.expiringDate = expiringDate;
         this.accessCode = UUID.randomUUID().toString();
+        this.histories = new ArrayList<>();
     }
 
     public User(String accessCode, Transfer transfer, List<Folder> folders, UserRole role, Date expiringDate) {
-        this.transfer= transfer;
+        this.transfer = transfer;
         this.accessCode = accessCode;
         this.folders = folders == null ? new ArrayList<>() : folders;
         this.role = role;
         this.expiringDate = expiringDate;
+        this.histories = new ArrayList<>();
     }
 
     public static User fromDTO(NewUserDTO userDTO) {
@@ -75,8 +82,6 @@ public class User {
 
     public void addFile(Folder folder, File file) {
         if (folders == null) folders = List.of();
-
-        System.out.println(folder.name());
 
         List<Folder> matchedFolders = this.folders.stream()
                 .filter(userFolder -> userFolder.name().equals(folder.name()))
@@ -131,7 +136,52 @@ public class User {
                 parsedFolders,
                 role,
                 expiringDate,
-                hasActiveAccount
+                hasActiveAccount,
+                histories
         );
+    }
+
+    public void addHistoryOfDownloadedFiles(List<File> downloadedFiles) {
+        if (this.histories == null) this.histories = new ArrayList<>();
+
+        this.histories.add(History.ofDownloadedFiles(downloadedFiles));
+    }
+
+    public void addHistory(History history) {
+        if (this.histories == null) this.histories = new ArrayList<>();
+
+        this.histories.add(history);
+    }
+
+    public void removeFolder(final Folder folderToDelete) {
+        this.folders = folders.stream()
+                .filter(folder -> !folder.id().equals(folderToDelete.id()))
+                .collect(Collectors.toList());
+    }
+
+    public void removeFile(final Folder folder, final File file) throws InvalidRequestDataException {
+        boolean isFolderHasThatFile = folder.files().stream().anyMatch(matchingFile -> matchingFile.getId().equals(file.getId()));
+
+        if (!isFolderHasThatFile) {
+            throw new InvalidRequestDataException("Invalid file or folder id");
+        }
+
+        List<File> mappedFiles = folder.files().stream()
+                .filter(checkingFile -> !checkingFile.getId().equals(file.getId()))
+                .toList();
+
+        Folder newFolder = new Folder(
+                folder.id(),
+                folder.url(),
+                folder.account(),
+                folder.name(),
+                mappedFiles,
+                folder.addedAt()
+        );
+
+        this.folders = folders
+                .stream()
+                .map(userFolder -> userFolder.id().equals(folder.id()) ? newFolder : userFolder)
+                .collect(Collectors.toList());
     }
 }

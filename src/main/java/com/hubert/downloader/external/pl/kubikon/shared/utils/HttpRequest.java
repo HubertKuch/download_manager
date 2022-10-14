@@ -1,7 +1,6 @@
 package com.hubert.downloader.external.pl.kubikon.shared.utils;
 
 import com.hubert.downloader.external.pl.kubikon.chomikmanager.Constants;
-import org.apache.tomcat.util.http.fileupload.IOUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -14,7 +13,6 @@ import java.net.HttpCookie;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.security.KeyStore;
 import java.security.SecureRandom;
@@ -146,8 +144,7 @@ public class HttpRequest {
 			}
 			connection.setRequestProperty("Accept-Encoding", "gzip, deflate");
 			//trustEveryone(connection);
-			if (connection instanceof HttpsURLConnection) {
-				HttpsURLConnection httpsURLConnection = (HttpsURLConnection) connection;
+			if (connection instanceof HttpsURLConnection httpsURLConnection) {
 				if (trustEveryone) {
 					httpsURLConnection.setHostnameVerifier((hostname, session) -> true);
 					TrustManager[] trustAllCerts = new TrustManager[]{
@@ -237,6 +234,7 @@ public class HttpRequest {
 			responseBody = new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8)).lines().collect(Collectors.joining("\n"));
 			stream.close();
 		}
+
 		return new HttpResponse(connection.getResponseCode(), responseBody, responseCookies);
 	}
 
@@ -263,6 +261,7 @@ public class HttpRequest {
 			body = jsonBody;
 		else if (rawBody != null)
 			body = rawBody;
+
 		return body;
 	}
 

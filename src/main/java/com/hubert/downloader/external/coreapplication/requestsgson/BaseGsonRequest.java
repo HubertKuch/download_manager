@@ -61,6 +61,7 @@ public abstract class BaseGsonRequest<T> {
 		Map<String, String> headers = new HashMap<>();
 		headers.put("Token", signRequest(httpRequest));
 		headers.put("User-Agent", "android/3.5 (" + AndroidApi.getDeviceId() + "; Samsung SM-G991)");
+
 		return headers;
 	}
 
