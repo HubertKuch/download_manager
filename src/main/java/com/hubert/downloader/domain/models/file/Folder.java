@@ -19,8 +19,8 @@ public record Folder(
         String account,
         String name,
         List<File> files,
-        Date addedAt
-        //PasswordData passwordData
+        Date addedAt,
+        PasswordData passwordData
 ) {
 
     public static Folder from(IncomingFolderDTO incomingFolderDTO, List<FolderDownloadChFile> requestedFiles) {
@@ -35,14 +35,15 @@ public record Folder(
                                 file.fileId,
                                 file.fileName,
                                 AndroidApi.getDownloadUrl(file.getId()).fileUrl,
-                                new InformationSize(InformationUnit.KILO_BYTE, file.size)
+                                new InformationSize(InformationUnit.KILO_BYTE, file.size),
+                                incomingFolderDTO.passwordData()
                         );
                     } catch (Exception | PasswordRequiredException e) {
                         throw new RuntimeException(e);
                     }
                 }).toList(),
-                new Date(System.currentTimeMillis())
-                //incomingFolderDTO.passwordData()
+                new Date(System.currentTimeMillis()),
+                incomingFolderDTO.passwordData()
         );
     }
 
@@ -57,9 +58,11 @@ public record Folder(
                                 file.getId(),
                                 file.getName(),
                                 file.getExtension(),
-                                file.getSize()
+                                file.getSize(),
+                                file.getPasswordData()
                         )).toList(),
-                addedAt == null ?  new Date() : addedAt
+                addedAt == null ?  new Date() : addedAt,
+                passwordData
         );
     }
 }

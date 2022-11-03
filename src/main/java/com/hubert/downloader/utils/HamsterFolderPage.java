@@ -57,25 +57,23 @@ public class HamsterFolderPage {
                 throw new InvalidPasswordDataException();
             }
 
+            webDriver.get(url);
+
+            provideFolderPassword(incomingDataRequestWithPassword.getPasswordData());
+            submitFolderLoginPage();
+
             if (isSecuredFolderPage()) {
                 provideFolderPassword(incomingDataRequestWithPassword.getPasswordData(), hamsterUser);
             }
-
         } catch (CopyingForbiddenException | ReloginRequiredException | TryAgainException | TooFastRequestsException | PasswordRequiredException e) {
             throw new RuntimeException(e);
         }
     }
 
-    private void provideHamsterPassword(IncomingDataRequestWithPassword incomingDataRequestWithPassword) throws
-            Exception,
-            CopyingForbiddenException,
-            ReloginRequiredException,
-            TryAgainException,
-            TooFastRequestsException,
-            PasswordRequiredException {
+    private void provideHamsterPassword(IncomingDataRequestWithPassword incomingDataRequestWithPassword) throws Exception, CopyingForbiddenException, ReloginRequiredException, TryAgainException, TooFastRequestsException, PasswordRequiredException {
+        final String HAMSTER_ID = getHamsterId();
 
-        WebApi.postUserPassword(getAccountName(), incomingDataRequestWithPassword.getPasswordData().hamsterPassword());
-        AndroidApi.postUserPassword(getAccountName(), incomingDataRequestWithPassword.getPasswordData().hamsterPassword());
+        AndroidApi.postPassword(HAMSTER_ID, "0", incomingDataRequestWithPassword.getPasswordData().getHamsterPassword());
 
         provideHamsterPassword(incomingDataRequestWithPassword.getPasswordData());
         submitHamsterLoginPage();
@@ -83,21 +81,29 @@ public class HamsterFolderPage {
 
     private void provideFolderPassword(PasswordData passwordData, HamsterUser hamsterUser) throws InvalidPasswordDataException {
         try {
-            AndroidApi.postFolderPassword(hamsterUser.accountId(), getFolderId(), passwordData.folderPassword());
-            WebApi.postFolderPassword(hamsterUser.accountId(), getFolderId(), getFolderName(), passwordData.folderPassword());
-        } catch (Exception | CopyingForbiddenException | ReloginRequiredException | TryAgainException | TooFastRequestsException ignored) {
+            AndroidApi.postPassword(hamsterUser.accountId(), getFolderId(), passwordData.getFolderPassword());
+
+            webDriver.get(url);
+        } catch (Exception | PasswordRequiredException ignored) {
+            System.out.println(ignored);
             throw new InvalidPasswordDataException();
-        } catch (PasswordRequiredException e) {
-            throw new RuntimeException(e);
         }
     }
 
     private void provideHamsterPassword(PasswordData passwordData) {
-        webDriver.findElement(By.cssSelector("#Password")).sendKeys(passwordData.hamsterPassword());
+        webDriver.findElement(By.cssSelector("#Password")).sendKeys(passwordData.getHamsterPassword());
+    }
+
+    private void provideFolderPassword(PasswordData passwordData) {
+        webDriver.findElement(By.cssSelector("#Password")).sendKeys(passwordData.getFolderPassword());
     }
 
     private void submitHamsterLoginPage() {
         webDriver.findElement(By.cssSelector(".loginForm form")).submit();
+    }
+
+    private void submitFolderLoginPage() {
+        webDriver.findElement(By.cssSelector("#LoginToFolder")).submit();
     }
 
     private Boolean isSecureHamsterPage() {
@@ -138,11 +144,16 @@ public class HamsterFolderPage {
 
     public String getFolderId() throws HamsterFolderLinkIsInvalid {
         try {
-            WebElement folderId = webDriver.findElement(By.cssSelector("#TreeForm input[name=FolderId]"));
+            Thread.sleep(500);
+            WebElement folderId = webDriver.findElement(By.cssSelector("input[name=FolderId]"));
+
+            System.out.println(folderId.getAttribute("value"));
 
             return folderId.getAttribute("value");
         } catch (NoSuchElementException ignored) {
             throwInvalidLink();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
         }
 
         return "";
@@ -175,8 +186,8 @@ public class HamsterFolderPage {
                 getAccountName(),
                 getFolderName(),
                 new ArrayList<>(),
-                new Timestamp(System.currentTimeMillis())
-                //PasswordData.withoutPassword()
+                new Timestamp(System.currentTimeMillis()),
+                PasswordData.withoutPassword()
         );
     }
 }

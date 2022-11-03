@@ -23,6 +23,7 @@ public abstract class BaseGsonRequest<T> {
 
 	public BaseGsonRequest(String uri, Class<T> valueType) {
 		this.url = AndroidApi.BASE_URL + uri;
+		System.out.println(this.url);
 		this.valueType = valueType;
 		httpRequest = new HttpRequest(url).setLogEnabled();
 	}

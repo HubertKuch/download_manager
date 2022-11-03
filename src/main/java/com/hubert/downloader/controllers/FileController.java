@@ -6,6 +6,7 @@ import com.hubert.downloader.domain.models.file.File;
 import com.hubert.downloader.domain.models.file.Folder;
 import com.hubert.downloader.domain.models.file.IncomingDataRequestWithPassword;
 import com.hubert.downloader.domain.models.file.dto.*;
+import com.hubert.downloader.domain.models.file.vo.PasswordData;
 import com.hubert.downloader.domain.models.history.History;
 import com.hubert.downloader.domain.models.tokens.Token;
 import com.hubert.downloader.domain.models.user.User;
@@ -44,7 +45,8 @@ public class FileController {
         FileIncomingDTO incomingFile = new FileIncomingDTO(
                 fileIncomingDTO.fileName(),
                 hamsterFolderPage.getFolderId(),
-                hamsterFolderPage.getAccountName()
+                hamsterFolderPage.getAccountName(),
+                fileIncomingDTO.getPasswordData()
         );
 
         File requestedFile = fileService.getRequestedFile(incomingFile);
@@ -64,28 +66,29 @@ public class FileController {
             @RequestHeader(name = "Authorization") String token,
             @RequestBody FileWithUrlAndPasswordInfo incomingFile
     ) throws Exception, PasswordRequiredException {
+
         User user = userService.findByToken(new Token(token));
         HamsterFolderPage hamsterFolderPage = getHamsterPagePreventsPasswordIssues(incomingFile);
 
-        Folder requestedFolder = fileService.getRequestedFolder(new IncomingFolderDTO(
-                incomingFile.url(),
-                hamsterFolderPage.getAccountName(),
-                hamsterFolderPage.getFolderName(),
-                hamsterFolderPage.getFolderId(),
-                incomingFile.passwordData()
-        ));
-
-        user.addHistory(History.ofAddedFiles(requestedFolder.files()));
-
-        requestedFolder.files().forEach(file -> {
-            try {
-                fileService.addFile(user, file, hamsterFolderPage.getFolder());
-            } catch (UserCantDownloadFile | HamsterFolderLinkIsInvalid | FolderRequiresPasswordException e) {
-                throw new RuntimeException(e);
-            }
-        });
-
-        userService.saveUser(user);
+//        Folder requestedFolder = fileService.getRequestedFolder(new IncomingFolderDTO(
+//                incomingFile.url(),
+//                hamsterFolderPage.getAccountName(),
+//                hamsterFolderPage.getFolderName(),
+//                hamsterFolderPage.getFolderId(),
+//                incomingFile.passwordData()
+//        ));
+//
+//        user.addHistory(History.ofAddedFiles(requestedFolder.files()));
+//
+//        requestedFolder.files().forEach(file -> {
+//            try {
+//                fileService.addFile(user, file, hamsterFolderPage.getFolder());
+//            } catch (UserCantDownloadFile | HamsterFolderLinkIsInvalid | FolderRequiresPasswordException e) {
+//                throw new RuntimeException(e);
+//            }
+//        });
+//
+//        userService.saveUser(user);
 
         return user.parseToDto();
     }

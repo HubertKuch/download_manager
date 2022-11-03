@@ -176,7 +176,8 @@ public class User {
                 folder.account(),
                 folder.name(),
                 mappedFiles,
-                folder.addedAt()
+                folder.addedAt(),
+                folder.passwordData()
         );
 
         this.folders = folders

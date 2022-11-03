@@ -120,6 +120,7 @@ public class HttpRequest {
 
 	public HttpRequest addHeaders(Map<String, String> headers) {
 		this.headers.putAll(headers);
+
 		return this;
 	}
 

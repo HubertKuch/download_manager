@@ -19,7 +19,13 @@ public class SeleniumConfiguration {
     public ChromeDriver chromeDriver() {
         ChromeOptions chromeOptions = new ChromeOptions();
 
-        chromeOptions.addArguments("--headless");
+        chromeOptions.addArguments(
+                "--mute-audio",
+                "--no-sandbox",
+                "--disable-dev-shm-usage",
+//                "--headless",
+                "--disable-logging"
+        );
 
         return new ChromeDriver(chromeOptions);
     }
