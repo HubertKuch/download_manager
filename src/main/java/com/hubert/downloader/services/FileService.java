@@ -180,9 +180,8 @@ public class FileService {
 
     private void provideUserPassword(AccountsListItem account, RequiringPassword requiringPassword) throws FolderRequiresPasswordException {
         try {
-            AndroidApi.postUserPassword(account.getAccountId(), requiringPassword.getPasswordData().getHamsterPassword());
-            WebApi.postUserPassword(account.getAccountName(), requiringPassword.getPasswordData().getHamsterPassword());
-        } catch (Exception | PasswordRequiredException | CopyingForbiddenException | ReloginRequiredException | TryAgainException | TooFastRequestsException e) {
+            AndroidApi.postPassword(account.getAccountId(), "0", requiringPassword.getPasswordData().getHamsterPassword());
+        } catch (Exception | PasswordRequiredException e) {
             throw new FolderRequiresPasswordException("");
         }
     }

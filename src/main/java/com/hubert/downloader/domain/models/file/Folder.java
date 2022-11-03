@@ -31,13 +31,17 @@ public record Folder(
                 incomingFolderDTO.name(),
                 requestedFiles.stream().map(file -> {
                     try {
-                        return new File(
+                        File newFile = new File(
                                 file.fileId,
-                                file.fileName,
+                                file.getFullFileName(),
                                 AndroidApi.getDownloadUrl(file.getId()).fileUrl,
                                 new InformationSize(InformationUnit.KILO_BYTE, file.size),
                                 incomingFolderDTO.passwordData()
                         );
+
+                        newFile.setExtension(file.fileType);
+
+                        return newFile;
                     } catch (Exception | PasswordRequiredException e) {
                         throw new RuntimeException(e);
                     }

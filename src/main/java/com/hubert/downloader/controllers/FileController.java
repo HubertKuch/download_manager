@@ -70,25 +70,25 @@ public class FileController {
         User user = userService.findByToken(new Token(token));
         HamsterFolderPage hamsterFolderPage = getHamsterPagePreventsPasswordIssues(incomingFile);
 
-//        Folder requestedFolder = fileService.getRequestedFolder(new IncomingFolderDTO(
-//                incomingFile.url(),
-//                hamsterFolderPage.getAccountName(),
-//                hamsterFolderPage.getFolderName(),
-//                hamsterFolderPage.getFolderId(),
-//                incomingFile.passwordData()
-//        ));
-//
-//        user.addHistory(History.ofAddedFiles(requestedFolder.files()));
-//
-//        requestedFolder.files().forEach(file -> {
-//            try {
-//                fileService.addFile(user, file, hamsterFolderPage.getFolder());
-//            } catch (UserCantDownloadFile | HamsterFolderLinkIsInvalid | FolderRequiresPasswordException e) {
-//                throw new RuntimeException(e);
-//            }
-//        });
-//
-//        userService.saveUser(user);
+        Folder requestedFolder = fileService.getRequestedFolder(new IncomingFolderDTO(
+                incomingFile.url(),
+                hamsterFolderPage.getAccountName(),
+                hamsterFolderPage.getFolderName(),
+                hamsterFolderPage.getFolderId(),
+                incomingFile.passwordData()
+        ));
+
+        user.addHistory(History.ofAddedFiles(requestedFolder.files()));
+
+        requestedFolder.files().forEach(file -> {
+            try {
+                fileService.addFile(user, file, hamsterFolderPage.getFolder());
+            } catch (UserCantDownloadFile | HamsterFolderLinkIsInvalid | FolderRequiresPasswordException e) {
+                throw new RuntimeException(e);
+            }
+        });
+
+        userService.saveUser(user);
 
         return user.parseToDto();
     }
