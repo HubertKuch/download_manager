@@ -59,8 +59,10 @@ public class HamsterFolderPage {
 
             webDriver.get(url);
 
-            provideFolderPassword(incomingDataRequestWithPassword.getPasswordData());
-            submitFolderLoginPage();
+            if (isSecuredFolderPage()) {
+                provideFolderPassword(incomingDataRequestWithPassword.getPasswordData());
+                submitFolderLoginPage();
+            }
 
             if (isSecuredFolderPage()) {
                 provideFolderPassword(incomingDataRequestWithPassword.getPasswordData(), hamsterUser);
@@ -73,7 +75,7 @@ public class HamsterFolderPage {
     private void provideHamsterPassword(IncomingDataRequestWithPassword incomingDataRequestWithPassword) throws Exception, CopyingForbiddenException, ReloginRequiredException, TryAgainException, TooFastRequestsException, PasswordRequiredException {
         final String HAMSTER_ID = getHamsterId();
 
-        AndroidApi.postPassword(HAMSTER_ID, "0", incomingDataRequestWithPassword.getPasswordData().getHamsterPassword());
+        HamsterPasswordUtils.provideUserPassword(HAMSTER_ID, incomingDataRequestWithPassword.getPasswordData());
 
         provideHamsterPassword(incomingDataRequestWithPassword.getPasswordData());
         submitHamsterLoginPage();
@@ -81,13 +83,12 @@ public class HamsterFolderPage {
 
     private void provideFolderPassword(PasswordData passwordData, HamsterUser hamsterUser) throws InvalidPasswordDataException {
         try {
-            AndroidApi.postPassword(hamsterUser.accountId(), getFolderId(), passwordData.getFolderPassword());
-
-            webDriver.get(url);
-        } catch (Exception | PasswordRequiredException ignored) {
-            System.out.println(ignored);
+            HamsterPasswordUtils.provideFolderPassword(hamsterUser.accountId(), getFolderId(), passwordData);
+        } catch (FolderRequiresPasswordException | HamsterFolderLinkIsInvalid e) {
             throw new InvalidPasswordDataException();
         }
+
+        webDriver.get(url);
     }
 
     private void provideHamsterPassword(PasswordData passwordData) {

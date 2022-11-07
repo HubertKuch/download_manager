@@ -21,6 +21,7 @@ import com.hubert.downloader.external.coreapplication.modelsgson.FolderDownloadC
 import com.hubert.downloader.external.coreapplication.modelsgson.GetDownloadUrl;
 import com.hubert.downloader.external.coreapplication.requestsgson.async.PasswordRequiredException;
 import com.hubert.downloader.external.pl.kubikon.chomikmanager.api.*;
+import com.hubert.downloader.utils.HamsterPasswordUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -49,21 +50,7 @@ public class FileService {
 
             FolderDownloadChFile requestedFile = requestedFileMatches.get(0);
 
-            if (fileIncomingDTO.passwordData().getHasPassword()) {
-                WebApi.postFolderPassword(
-                        account.getAccountName(),
-                        fileIncomingDTO.folderId(),
-                        requestedFile.getName(),
-                        fileIncomingDTO.passwordData().getFolderPassword()
-                );
-
-                AndroidApi.postFolderPassword(
-                        account.getAccountId(),
-                        fileIncomingDTO.folderId(),
-                        fileIncomingDTO.passwordData().getFolderPassword()
-                );
-            }
-
+            HamsterPasswordUtils.operateOnFile(fileIncomingDTO.getPasswordData(), fileIncomingDTO.folderId(), account.getAccountId());
             GetDownloadUrl downloadUrl = AndroidApi.getDownloadUrl(requestedFile.getId());
 
             return new File(
@@ -76,8 +63,7 @@ public class FileService {
                     ),
                     fileIncomingDTO.passwordData()
             );
-        } catch (Exception | PasswordRequiredException | TryAgainException | TooFastRequestsException |
-                 ReloginRequiredException | CopyingForbiddenException e) {
+        } catch (Exception | PasswordRequiredException e) {
             throw new FolderRequiresPasswordException("");
         }
     }
@@ -131,17 +117,7 @@ public class FileService {
 
         try {
             AccountsListItem accountsListItem = AndroidApi.searchForAccount(folder.account());
-
-            if (file.getPasswordData().getHasPassword()) {
-                if (file.getPasswordData().getFolderPassword() != null) {
-                    provideFolderPassword(accountsListItem.getAccountId(), folder.id(), folder.passwordData());
-                }
-
-                if (file.getPasswordData().getHamsterPassword() != null) {
-                    provideUserPassword(accountsListItem.getAccountId(), folder.passwordData());
-                }
-            }
-
+            HamsterPasswordUtils.operateOnFile(file, folder, accountsListItem);
             GetDownloadUrl url = AndroidApi.getDownloadUrl(file.getHamsterId());
 
             if (!userCanDownloadFile) {
@@ -211,21 +187,5 @@ public class FileService {
 
     public void removeFile(User user, Folder folder, File file) throws InvalidRequestDataException {
         user.removeFile(folder, file);
-    }
-
-    private void provideUserPassword(String accountId, PasswordData passwordData) throws FolderRequiresPasswordException {
-        try {
-            AndroidApi.postPassword(accountId, "0", passwordData.getFolderPassword());
-        } catch (Exception | PasswordRequiredException e) {
-            throw new FolderRequiresPasswordException("");
-        }
-    }
-
-    private void provideFolderPassword(String accountId, String folderId, PasswordData passwordData) throws FolderRequiresPasswordException {
-        try {
-            AndroidApi.postPassword(accountId, folderId, passwordData.getFolderPassword());
-        } catch (Exception | PasswordRequiredException e) {
-            throw new FolderRequiresPasswordException("");
-        }
     }
 }
