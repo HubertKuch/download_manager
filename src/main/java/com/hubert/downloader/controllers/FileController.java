@@ -66,7 +66,6 @@ public class FileController {
             @RequestHeader(name = "Authorization") String token,
             @RequestBody FileWithUrlAndPasswordInfo incomingFile
     ) throws Exception, PasswordRequiredException {
-
         User user = userService.findByToken(new Token(token));
         HamsterFolderPage hamsterFolderPage = getHamsterPagePreventsPasswordIssues(incomingFile);
 
@@ -118,27 +117,7 @@ public class FileController {
     ) throws Exception, PasswordRequiredException {
         User user = userService.findByToken(new Token(token.replace("Bearer ", "")));
 
-        List<File> matchedFiles = user
-                .getFolders()
-                .stream()
-                .map(Folder::files)
-                .flatMap(Collection::stream)
-                .filter(file -> file.getId().toString().equals(id))
-                .toList();
-
-        if (matchedFiles.isEmpty()) {
-            throw new FileNotFoundException(String.format("File with id - %s - not found.", id));
-        }
-
-        File file = matchedFiles.get(0);
-
-        GetDownloadUrl url = AndroidApi.getDownloadUrl(file.getHamsterId());
-
-        user.addHistory(History.ofDownloadedFiles(file));
-
-        file.setPath(url.fileUrl);
-
-        return fileService.downloadFile(user, file);
+        return fileService.downloadFile(user, id);
     }
 
     @GetMapping("/resource/whole-folder/{id}/")

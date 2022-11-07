@@ -11,6 +11,8 @@ import com.hubert.downloader.domain.models.file.Folder;
 import com.hubert.downloader.domain.models.file.RequiringPassword;
 import com.hubert.downloader.domain.models.file.dto.FileIncomingDTO;
 import com.hubert.downloader.domain.models.file.dto.IncomingFolderDTO;
+import com.hubert.downloader.domain.models.file.vo.PasswordData;
+import com.hubert.downloader.domain.models.history.History;
 import com.hubert.downloader.domain.models.user.User;
 import com.hubert.downloader.domain.validators.FileValidator;
 import com.hubert.downloader.external.coreapplication.models.AccountsListItem;
@@ -22,10 +24,7 @@ import com.hubert.downloader.external.pl.kubikon.chomikmanager.api.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 @Component
 @RequiredArgsConstructor
@@ -86,16 +85,6 @@ public class FileService {
     public Folder getRequestedFolder(IncomingFolderDTO incomingFolderDTO) throws FolderRequiresPasswordException {
         try {
             AccountsListItem account = AndroidApi.searchForAccount(incomingFolderDTO.account());
-
-            if (incomingFolderDTO.passwordData().getHasPassword()) {
-                if (incomingFolderDTO.folderId().equals("0")) {
-                    provideUserPassword(account, incomingFolderDTO);
-                }
-
-//                    provideFolderPassword(account, incomingFolderDTO);
-//                }
-            }
-
             FolderDownload folder = AndroidApi.getFolderDownload(account.getAccountId(), incomingFolderDTO.folderId(), incomingFolderDTO.name());
 
             List<FolderDownloadChFile> requestedFiles = folder.files;
@@ -113,20 +102,66 @@ public class FileService {
         return userService.saveUser(user);
     }
 
-    public File downloadFile(final User user, final File file) throws UserCantDownloadFile {
+    public File downloadFile(final User user, final String fileId) throws UserCantDownloadFile, FileNotFoundException {
+        List<Folder> matchedFolders = user
+                .getFolders()
+                .stream()
+                .filter(folder -> folder.files().stream().anyMatch(file -> file.getId().toString().equals(fileId)))
+                .toList();
+
+        if (matchedFolders.isEmpty()) {
+            throw new FileNotFoundException(String.format("File with id - %s - not found.", fileId));
+        }
+
+        Folder folder = matchedFolders.get(0);
+
+        List<File> matchedFiles = folder
+                .files()
+                .stream()
+                .filter(file -> file.getId().toString().equals(fileId))
+                .toList();
+
+        if (matchedFiles.isEmpty()) {
+            throw new FileNotFoundException(String.format("File with id - %s - not found.", fileId));
+        }
+
+        File file = matchedFiles.get(0);
+
         boolean userCanDownloadFile = fileValidator.userCanDownloadAFile(user, file);
 
-        if (!userCanDownloadFile) {
-            throw new UserCantDownloadFile("User doesn't have enough transfer to download a file.");
+        try {
+            AccountsListItem accountsListItem = AndroidApi.searchForAccount(folder.account());
+
+            if (file.getPasswordData().getHasPassword()) {
+                if (file.getPasswordData().getFolderPassword() != null) {
+                    provideFolderPassword(accountsListItem.getAccountId(), folder.id(), folder.passwordData());
+                }
+
+                if (file.getPasswordData().getHamsterPassword() != null) {
+                    provideUserPassword(accountsListItem.getAccountId(), folder.passwordData());
+                }
+            }
+
+            GetDownloadUrl url = AndroidApi.getDownloadUrl(file.getHamsterId());
+
+            if (!userCanDownloadFile) {
+                throw new UserCantDownloadFile("User doesn't have enough transfer to download a file.");
+            }
+
+            if (user.getTransfer().getTransfer().size() >= 0) {
+                user.getTransfer().subtract(file.getSize());
+            }
+
+            user.addHistory(History.ofDownloadedFiles(file));
+
+            file.setPath(url.fileUrl);
+
+            userService.saveUser(user);
+
+            return file;
+        } catch (Exception | PasswordRequiredException e) {
+            throw new UserCantDownloadFile("User cant download a file. File missing.");
         }
-
-        if (user.getTransfer().getTransfer().size() >= 0) {
-            user.getTransfer().subtract(file.getSize());
-        }
-
-        userService.saveUser(user);
-
-        return file;
     }
 
     public Folder downloadFolder(final User user, final Folder folder) throws UserCantDownloadFile {
@@ -178,19 +213,18 @@ public class FileService {
         user.removeFile(folder, file);
     }
 
-    private void provideUserPassword(AccountsListItem account, RequiringPassword requiringPassword) throws FolderRequiresPasswordException {
+    private void provideUserPassword(String accountId, PasswordData passwordData) throws FolderRequiresPasswordException {
         try {
-            AndroidApi.postPassword(account.getAccountId(), "0", requiringPassword.getPasswordData().getHamsterPassword());
+            AndroidApi.postPassword(accountId, "0", passwordData.getFolderPassword());
         } catch (Exception | PasswordRequiredException e) {
             throw new FolderRequiresPasswordException("");
         }
     }
 
-    private void provideFolderPassword(AccountsListItem account, IncomingFolderDTO folderDTO) throws FolderRequiresPasswordException {
+    private void provideFolderPassword(String accountId, String folderId, PasswordData passwordData) throws FolderRequiresPasswordException {
         try {
-            AndroidApi.postFolderPassword(account.getAccountId(), folderDTO.folderId(), folderDTO.getPasswordData().getFolderPassword());
-            WebApi.postFolderPassword(account.getAccountName(), folderDTO.folderId(), folderDTO.name(), folderDTO.getPasswordData().getFolderPassword());
-        } catch (Exception | PasswordRequiredException | CopyingForbiddenException | ReloginRequiredException | TryAgainException | TooFastRequestsException e) {
+            AndroidApi.postPassword(accountId, folderId, passwordData.getFolderPassword());
+        } catch (Exception | PasswordRequiredException e) {
             throw new FolderRequiresPasswordException("");
         }
     }

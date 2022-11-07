@@ -23,7 +23,7 @@ public class SeleniumConfiguration {
                 "--mute-audio",
                 "--no-sandbox",
                 "--disable-dev-shm-usage",
-//                "--headless",
+                "--headless",
                 "--disable-logging"
         );
 
