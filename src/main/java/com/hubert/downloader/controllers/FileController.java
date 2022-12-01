@@ -144,6 +144,7 @@ public class FileController {
 
             try {
                 url = AndroidApi.getDownloadUrl(file.getHamsterId());
+
             } catch (Exception | PasswordRequiredException e) {
                 throw new RuntimeException(e);
             }

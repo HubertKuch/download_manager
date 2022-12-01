@@ -119,6 +119,7 @@ public class FileService {
             AccountsListItem accountsListItem = AndroidApi.searchForAccount(folder.account());
 
             if (file.getPasswordData() != null && file.getPasswordData().getHasPassword()) {
+                System.out.println("Providing password data.");
                 HamsterPasswordUtils.operateOnFile(file, folder, accountsListItem);
             }
 
@@ -140,7 +141,7 @@ public class FileService {
 
             return file;
         } catch (Exception | PasswordRequiredException e) {
-            System.out.println(e);
+            e.printStackTrace();
             throw new UserCantDownloadFile("User cant download a file. File missing.");
         }
     }

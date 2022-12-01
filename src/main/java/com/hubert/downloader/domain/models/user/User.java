@@ -11,6 +11,7 @@ import com.hubert.downloader.domain.models.file.dto.FolderWithFilesWithoutPaths;
 import com.hubert.downloader.domain.models.history.History;
 import com.hubert.downloader.domain.models.user.dto.NewUserDTO;
 import com.hubert.downloader.domain.models.user.dto.UserWithoutPathInFilesDTO;
+import com.hubert.downloader.domain.models.user.responses.UserDataEntity;
 import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -76,6 +77,19 @@ public class User {
         return user;
     }
 
+    public UserDataEntity toDataEntity() {
+        return new UserDataEntity(id, accessCode, transfer, getTransferInOtherUnits(), role, expiringDate, hasActiveAccount);
+    }
+
+    public List<Transfer> getTransferInOtherUnits() {
+        return List.of(
+                new Transfer(
+                        new InformationSize(InformationUnit.GIGA_BYTE, transfer.getTransfer().parseTo(InformationUnit.GIGA_BYTE).size()),
+                        new InformationSize(InformationUnit.GIGA_BYTE, transfer.getStartTransfer().parseTo(InformationUnit.GIGA_BYTE).size())
+                )
+        );
+    }
+
     public Long compareFileSizeWithUserTransfer(final File file) {
         return transfer.getTransfer().parseTo(InformationUnit.BYTE).size() - file.getSize().parseTo(InformationUnit.BYTE).size();
     }
@@ -127,12 +141,7 @@ public class User {
                 id,
                 accessCode,
                 transfer,
-                List.of(
-                        new Transfer(
-                                new InformationSize(InformationUnit.GIGA_BYTE, transfer.getTransfer().parseTo(InformationUnit.GIGA_BYTE).size()),
-                                new InformationSize(InformationUnit.GIGA_BYTE, transfer.getStartTransfer().parseTo(InformationUnit.GIGA_BYTE).size())
-                        )
-                ),
+                getTransferInOtherUnits(),
                 parsedFolders,
                 role,
                 expiringDate,
