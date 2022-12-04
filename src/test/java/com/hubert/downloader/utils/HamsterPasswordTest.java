@@ -52,26 +52,20 @@ class HamsterPasswordTest {
 
     @Test
     void provideUserPassword() {
-        assertDoesNotThrow(() -> {
-            HamsterPassword.provideUserPassword(this.account.getAccountId(), this.mockedFolder.passwordData());
-        });
+        assertDoesNotThrow(() -> HamsterPassword.provideUserPassword(this.account.getAccountId(), this.mockedFolder.passwordData()));
     }
 
     @Test
     void provideFolderPassword() {
-        assertDoesNotThrow(() -> {
-            HamsterPassword.provideFolderPassword(
-                    this.account.getAccountId(),
-                    this.mockedFolder.id(),
-                    this.mockedFolder.passwordData()
-            );
-        });
+        assertDoesNotThrow(() -> HamsterPassword.provideFolderPassword(
+                this.account.getAccountId(),
+                this.mockedFolder.id(),
+                this.mockedFolder.passwordData()
+        ));
     }
 
     @Test
     void operateOnFile() {
-        assertDoesNotThrow(() -> {
-            HamsterPassword.operateOnFile(this.mockedFile, this.mockedFolder, this.account);
-        });
+        assertDoesNotThrow(() -> HamsterPassword.operateOnFile(this.mockedFile, this.mockedFolder, this.account));
     }
 }
