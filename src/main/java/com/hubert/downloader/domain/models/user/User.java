@@ -150,10 +150,8 @@ public class User {
         );
     }
 
-    public void addHistoryOfDownloadedFiles(List<File> downloadedFiles) {
-        if (this.histories == null) this.histories = new ArrayList<>();
-
-        this.histories.add(History.ofDownloadedFiles(downloadedFiles));
+    public UserPayload toPayload() {
+        return new UserPayload(id, accessCode, transfer, role, expiringDate, hasActiveAccount);
     }
 
     public void addHistory(History history) {
