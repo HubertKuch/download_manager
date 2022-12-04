@@ -75,7 +75,7 @@ public class HamsterFolderPage {
     private void provideHamsterPassword(IncomingDataRequestWithPassword incomingDataRequestWithPassword) throws Exception, CopyingForbiddenException, ReloginRequiredException, TryAgainException, TooFastRequestsException, PasswordRequiredException {
         final String HAMSTER_ID = getHamsterId();
 
-        HamsterPasswordUtils.provideUserPassword(HAMSTER_ID, incomingDataRequestWithPassword.getPasswordData());
+        HamsterPassword.provideUserPassword(HAMSTER_ID, incomingDataRequestWithPassword.getPasswordData());
 
         provideHamsterPassword(incomingDataRequestWithPassword.getPasswordData());
         submitHamsterLoginPage();
@@ -83,7 +83,7 @@ public class HamsterFolderPage {
 
     private void provideFolderPassword(PasswordData passwordData, HamsterUser hamsterUser) throws InvalidPasswordDataException {
         try {
-            HamsterPasswordUtils.provideFolderPassword(hamsterUser.accountId(), getFolderId(), passwordData);
+            HamsterPassword.provideFolderPassword(hamsterUser.accountId(), getFolderId(), passwordData);
         } catch (FolderRequiresPasswordException | HamsterFolderLinkIsInvalid e) {
             throw new InvalidPasswordDataException();
         }

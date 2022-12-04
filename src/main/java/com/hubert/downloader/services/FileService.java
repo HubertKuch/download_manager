@@ -8,10 +8,8 @@ import com.hubert.downloader.domain.exceptions.InvalidRequestDataException;
 import com.hubert.downloader.domain.exceptions.UserCantDownloadFile;
 import com.hubert.downloader.domain.models.file.File;
 import com.hubert.downloader.domain.models.file.Folder;
-import com.hubert.downloader.domain.models.file.RequiringPassword;
 import com.hubert.downloader.domain.models.file.dto.FileIncomingDTO;
 import com.hubert.downloader.domain.models.file.dto.IncomingFolderDTO;
-import com.hubert.downloader.domain.models.file.vo.PasswordData;
 import com.hubert.downloader.domain.models.history.History;
 import com.hubert.downloader.domain.models.user.User;
 import com.hubert.downloader.domain.validators.FileValidator;
@@ -21,7 +19,7 @@ import com.hubert.downloader.external.coreapplication.modelsgson.FolderDownloadC
 import com.hubert.downloader.external.coreapplication.modelsgson.GetDownloadUrl;
 import com.hubert.downloader.external.coreapplication.requestsgson.async.PasswordRequiredException;
 import com.hubert.downloader.external.pl.kubikon.chomikmanager.api.*;
-import com.hubert.downloader.utils.HamsterPasswordUtils;
+import com.hubert.downloader.utils.HamsterPassword;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -50,7 +48,7 @@ public class FileService {
 
             FolderDownloadChFile requestedFile = requestedFileMatches.get(0);
 
-            HamsterPasswordUtils.operateOnFile(fileIncomingDTO.getPasswordData(), fileIncomingDTO.folderId(), account.getAccountId());
+            HamsterPassword.operateOnFile(fileIncomingDTO.getPasswordData(), fileIncomingDTO.folderId(), account.getAccountId());
             GetDownloadUrl downloadUrl = AndroidApi.getDownloadUrl(requestedFile.getId());
 
             return new File(
@@ -119,7 +117,7 @@ public class FileService {
             AccountsListItem accountsListItem = AndroidApi.searchForAccount(folder.account());
 
             if (file.getPasswordData() != null && file.getPasswordData().getHasPassword()) {
-                HamsterPasswordUtils.operateOnFile(file, folder, accountsListItem);
+                HamsterPassword.operateOnFile(file, folder, accountsListItem);
             }
 
             GetDownloadUrl url = AndroidApi.getDownloadUrl(file.getHamsterId());
@@ -140,7 +138,6 @@ public class FileService {
 
             return file;
         } catch (Exception | PasswordRequiredException e) {
-            System.out.println(e);
             throw new UserCantDownloadFile("User cant download a file. File missing.");
         }
     }
@@ -152,9 +149,7 @@ public class FileService {
             throw new UserCantDownloadFile("User doesn't have enough transfer to download a file.");
         }
 
-        folder.files().forEach(file -> {
-            user.getTransfer().subtract(file.getSize());
-        });
+        folder.files().forEach(file -> user.getTransfer().subtract(file.getSize()));
 
         userService.saveUser(user);
 

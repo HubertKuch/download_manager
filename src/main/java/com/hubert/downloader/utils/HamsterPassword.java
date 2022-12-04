@@ -8,7 +8,7 @@ import com.hubert.downloader.external.coreapplication.models.AccountsListItem;
 import com.hubert.downloader.external.coreapplication.requestsgson.async.PasswordRequiredException;
 import com.hubert.downloader.external.pl.kubikon.chomikmanager.api.AndroidApi;
 
-public final class HamsterPasswordUtils {
+public final class HamsterPassword   {
 
     public static void provideUserPassword(String accountId, PasswordData passwordData) throws FolderRequiresPasswordException {
         try {
