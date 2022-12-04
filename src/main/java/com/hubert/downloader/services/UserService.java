@@ -16,7 +16,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class UserService {
 
-    private final UserRepository repository;
+    private final UserRepository userRepository;
     private final TokenService tokenService;
 
     public User saveUser(User user) {
@@ -26,19 +26,23 @@ public class UserService {
         );
         user.setTransfer(transferInBytes);
 
-        return repository.save(user);
+        return userRepository.save(user);
     }
 
     public List<User> getUsers() {
-        return repository.findAll();
+        return userRepository.findAll();
     }
 
     public User findByAccessCode(AccessCodeDTO accessCodeDTO) {
-        return repository.findFirstByAccessCode(accessCodeDTO.accessCode().toString());
+        return userRepository.findFirstByAccessCode(accessCodeDTO.accessCode().toString());
     }
 
     public User findByToken(Token token) {
         AccessCodeDTO accessCodeDTO = tokenService.decode(token);
         return findByAccessCode(accessCodeDTO);
+    }
+
+    public User findById(String id) {
+        return userRepository.findById(id).orElse(null);
     }
 }
