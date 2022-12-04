@@ -8,11 +8,11 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class HamsterFolderPageTest {
 
-    @Test
-    public void testProvidingPasswordToFolder() throws PasswordRequiredException, Exception {
-        // DATA: {"AccountId":"17174931","FolderId":"724","Password":"22"}
-
-        AndroidApi.postPassword("17174931", "0", "szpital");
-        AndroidApi.postPassword("17174931", "730", "123");
-    }
+//    @Test
+//    public void testProvidingPasswordToFolder() throws PasswordRequiredException, Exception {
+//        // DATA: {"AccountId":"17174931","FolderId":"724","Password":"22"}
+//
+////        AndroidApi.postPassword("17174931", "0", "szpital");
+////        AndroidApi.postPassword("17174931", "730", "123");
+//    }
 }
