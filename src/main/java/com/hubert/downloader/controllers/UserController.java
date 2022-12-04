@@ -1,6 +1,5 @@
 package com.hubert.downloader.controllers;
 
-import com.hubert.downloader.domain.models.file.Folder;
 import com.hubert.downloader.domain.models.file.dto.FolderWithFilesWithoutPaths;
 import com.hubert.downloader.domain.models.history.History;
 import com.hubert.downloader.domain.models.tokens.Token;
@@ -8,7 +7,6 @@ import com.hubert.downloader.domain.models.user.User;
 import com.hubert.downloader.domain.models.user.dto.NewUserDTO;
 import com.hubert.downloader.domain.models.user.dto.UserWithoutPathInFilesDTO;
 import com.hubert.downloader.domain.models.user.responses.UserDataEntity;
-import com.hubert.downloader.services.FileService;
 import com.hubert.downloader.services.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
