@@ -9,6 +9,7 @@ import com.hubert.downloader.domain.models.report.ResponseReportEntity;
 import com.hubert.downloader.domain.models.user.User;
 import com.hubert.downloader.repositories.ReportRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -54,4 +55,8 @@ public class ReportService {
 
         return reportRepository.save(report);
     };
+
+    public List<Report> getUserReports(User user) {
+        return reportRepository.findAllByReportingUserId(user.getId());
+    }
 }

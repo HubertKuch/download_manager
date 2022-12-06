@@ -14,6 +14,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/reports")
@@ -47,7 +49,7 @@ public class ReportController {
         return reportService.aggregate(report);
     }
 
-    @PatchMapping("/{reportId}")
+    @PatchMapping("/{reportId}/")
     @ResponseStatus(HttpStatus.OK)
     public ResponseReportEntity changeReportStatus(
             @RequestBody ReportUpdatePayload reportUpdatePayload,
@@ -57,5 +59,18 @@ public class ReportController {
         Report report = reportService.update(reportId, reportUpdatePayload);
 
         return reportService.aggregate(report);
+    }
+
+    @GetMapping("/own/")
+    public ResponseEntity<?> getUserReports(
+            @RequestHeader(name = "Authorization") String token
+    ) {
+        User user = userService.findByToken(new Token(token));
+
+        if (user == null) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        return ResponseEntity.ok(reportService.getUserReports(user));
     }
 }
