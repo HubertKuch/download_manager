@@ -7,12 +7,15 @@ import com.hubert.downloader.domain.models.file.vo.PasswordData;
 import com.hubert.downloader.external.coreapplication.models.AccountsListItem;
 import com.hubert.downloader.external.coreapplication.requestsgson.async.PasswordRequiredException;
 import com.hubert.downloader.external.pl.kubikon.chomikmanager.api.AndroidApi;
-import com.hubert.downloader.external.pl.kubikon.chomikmanager.api.WebApi;
 
 public final class HamsterPassword   {
 
     public static void provideUserPassword(String accountId, PasswordData passwordData) throws FolderRequiresPasswordException {
         try {
+            System.out.println();
+            System.out.println(accountId);
+            System.out.println(passwordData);
+            System.out.println();
             AndroidApi.postPassword(accountId, "0", passwordData.getHamsterPassword());
         } catch (Exception | PasswordRequiredException e) {
             System.out.println(e);
@@ -22,6 +25,11 @@ public final class HamsterPassword   {
 
     public static void provideFolderPassword(String accountId, String folderId, PasswordData passwordData) throws FolderRequiresPasswordException {
         try {
+            System.out.println();
+            System.out.println(accountId);
+            System.out.println(folderId);
+            System.out.println(passwordData);
+            System.out.println();
             AndroidApi.postPassword(accountId, folderId, passwordData.getFolderPassword());
         } catch (Exception | PasswordRequiredException e) {
             System.out.println(e);

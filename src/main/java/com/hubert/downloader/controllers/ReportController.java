@@ -8,29 +8,38 @@ import com.hubert.downloader.domain.models.user.User;
 import com.hubert.downloader.services.ReportService;
 import com.hubert.downloader.services.UserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/reports/")
+@RequestMapping("/api/v1/reports")
 public class ReportController {
 
     private final ReportService reportService;
     private final UserService userService;
 
-    @GetMapping
-    public List<ResponseReportsEntity> getReports() {
-        return reportService.getAggregatedReports();
+    @GetMapping("/")
+    public ResponseEntity<?> getReports(
+            @RequestHeader(name = "Authorization") String token
+    ) {
+        User user = userService.findByToken(new Token(token));
+
+        if (user == null) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        return ResponseEntity.ok(reportService.getAggregatedReports());
     }
 
-    @PostMapping
+    @PostMapping("/")
+    @ResponseStatus(HttpStatus.CREATED)
     public ResponseReportsEntity newReport(
             @RequestHeader(name = "Authorization") String token,
             @RequestBody ReportPayload reportPayload
     ) {
-        User user = userService.findByToken(new Token(token.replace("Bearer ", "")));
+        User user = userService.findByToken(new Token(token));
         Report report = reportService.addReport(reportPayload, user);
 
         return reportService.aggregate(report);
