@@ -1,7 +1,9 @@
 package com.hubert.downloader.controllers;
 
+import com.hubert.downloader.domain.exceptions.InvalidRequestDataException;
 import com.hubert.downloader.domain.models.report.Report;
 import com.hubert.downloader.domain.models.report.ReportPayload;
+import com.hubert.downloader.domain.models.report.ReportUpdatePayload;
 import com.hubert.downloader.domain.models.report.ResponseReportsEntity;
 import com.hubert.downloader.domain.models.tokens.Token;
 import com.hubert.downloader.domain.models.user.User;
@@ -41,6 +43,18 @@ public class ReportController {
     ) {
         User user = userService.findByToken(new Token(token));
         Report report = reportService.addReport(reportPayload, user);
+
+        return reportService.aggregate(report);
+    }
+
+    @PatchMapping("/{reportId}")
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseReportsEntity changeReportStatus(
+            @RequestBody ReportUpdatePayload reportUpdatePayload,
+            @RequestHeader(name = "Authorization") String token,
+            @PathVariable(name = "reportId") String reportId
+    ) throws InvalidRequestDataException {
+        Report report = reportService.update(reportId, reportUpdatePayload);
 
         return reportService.aggregate(report);
     }

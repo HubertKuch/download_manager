@@ -41,4 +41,10 @@ public class Report {
                 reportPayload.bugRefersTo()
         );
     }
+
+    public Report update(ReportUpdatePayload reportUpdatePayload) {
+        this.bugStatus = reportUpdatePayload.bugStatus();
+
+        return this;
+    }
 }
