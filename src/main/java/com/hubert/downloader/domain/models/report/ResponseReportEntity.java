@@ -5,7 +5,7 @@ import com.hubert.downloader.domain.models.user.UserPayload;
 
 import java.util.Date;
 
-public record ResponseReportsEntity(
+public record ResponseReportEntity(
         String id,
         UserPayload userPayload,
         String content,
@@ -13,8 +13,8 @@ public record ResponseReportsEntity(
         BugStatus bugStatus,
         BugRefersTo bugRefersTo
 ) {
-    public static ResponseReportsEntity from(Report report, User user) {
-        return new ResponseReportsEntity(
+    public static ResponseReportEntity from(Report report, User user) {
+        return new ResponseReportEntity(
                 report.getId(),
                 user.toPayload(),
                 report.getContent(),

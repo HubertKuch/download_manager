@@ -4,7 +4,7 @@ import com.hubert.downloader.domain.exceptions.InvalidRequestDataException;
 import com.hubert.downloader.domain.models.report.Report;
 import com.hubert.downloader.domain.models.report.ReportPayload;
 import com.hubert.downloader.domain.models.report.ReportUpdatePayload;
-import com.hubert.downloader.domain.models.report.ResponseReportsEntity;
+import com.hubert.downloader.domain.models.report.ResponseReportEntity;
 import com.hubert.downloader.domain.models.tokens.Token;
 import com.hubert.downloader.domain.models.user.User;
 import com.hubert.downloader.services.ReportService;
@@ -37,7 +37,7 @@ public class ReportController {
 
     @PostMapping("/")
     @ResponseStatus(HttpStatus.CREATED)
-    public ResponseReportsEntity newReport(
+    public ResponseReportEntity newReport(
             @RequestHeader(name = "Authorization") String token,
             @RequestBody ReportPayload reportPayload
     ) {
@@ -49,7 +49,7 @@ public class ReportController {
 
     @PatchMapping("/{reportId}")
     @ResponseStatus(HttpStatus.OK)
-    public ResponseReportsEntity changeReportStatus(
+    public ResponseReportEntity changeReportStatus(
             @RequestBody ReportUpdatePayload reportUpdatePayload,
             @RequestHeader(name = "Authorization") String token,
             @PathVariable(name = "reportId") String reportId

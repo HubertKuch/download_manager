@@ -5,7 +5,7 @@ import com.hubert.downloader.domain.exceptions.InvalidRequestDataException;
 import com.hubert.downloader.domain.models.report.Report;
 import com.hubert.downloader.domain.models.report.ReportPayload;
 import com.hubert.downloader.domain.models.report.ReportUpdatePayload;
-import com.hubert.downloader.domain.models.report.ResponseReportsEntity;
+import com.hubert.downloader.domain.models.report.ResponseReportEntity;
 import com.hubert.downloader.domain.models.user.User;
 import com.hubert.downloader.repositories.ReportRepository;
 import lombok.RequiredArgsConstructor;
@@ -31,11 +31,11 @@ public class ReportService {
         return reportRepository.findAll();
     }
 
-    public ResponseReportsEntity aggregate(Report report) {
+    public ResponseReportEntity aggregate(Report report) {
         return reportAggregator.responseEntity(report);
     }
 
-    public List<ResponseReportsEntity> getAggregatedReports() {
+    public List<ResponseReportEntity> getAggregatedReports() {
         List<Report> reports = getReports();
 
         return reportAggregator.responseEntity(reports);
