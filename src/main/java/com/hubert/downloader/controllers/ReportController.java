@@ -7,6 +7,7 @@ import com.hubert.downloader.domain.models.report.ReportUpdatePayload;
 import com.hubert.downloader.domain.models.report.ResponseReportEntity;
 import com.hubert.downloader.domain.models.tokens.Token;
 import com.hubert.downloader.domain.models.user.User;
+import com.hubert.downloader.domain.models.user.UserRole;
 import com.hubert.downloader.services.ReportService;
 import com.hubert.downloader.services.UserService;
 import lombok.RequiredArgsConstructor;
@@ -28,7 +29,7 @@ public class ReportController {
     public ResponseEntity<?> getReports(@RequestHeader(name = "Authorization") String token) {
         User user = userService.findByToken(new Token(token));
 
-        if (user == null) {
+        if (user == null || !user.getRole().equals(UserRole.ADMIN)) {
             return ResponseEntity.badRequest().build();
         }
 
