@@ -36,6 +36,10 @@ public class ReportService {
         return reportAggregator.responseEntity(report);
     }
 
+    public List<ResponseReportEntity> aggregate(List<Report> reports) {
+        return reports.stream().map(this::aggregate).toList();
+    }
+
     public List<ResponseReportEntity> getAggregatedReports() {
         List<Report> reports = getReports();
 
