@@ -14,8 +14,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/reports")
@@ -25,9 +23,7 @@ public class ReportController {
     private final UserService userService;
 
     @GetMapping("/")
-    public ResponseEntity<?> getReports(
-            @RequestHeader(name = "Authorization") String token
-    ) {
+    public ResponseEntity<?> getReports(@RequestHeader(name = "Authorization") String token) {
         User user = userService.findByToken(new Token(token));
 
         if (user == null) {
@@ -40,9 +36,7 @@ public class ReportController {
     @PostMapping("/")
     @ResponseStatus(HttpStatus.CREATED)
     public ResponseReportEntity newReport(
-            @RequestHeader(name = "Authorization") String token,
-            @RequestBody ReportPayload reportPayload
-    ) {
+            @RequestHeader(name = "Authorization") String token, @RequestBody ReportPayload reportPayload) {
         User user = userService.findByToken(new Token(token));
         Report report = reportService.addReport(reportPayload, user);
 
@@ -54,17 +48,14 @@ public class ReportController {
     public ResponseReportEntity changeReportStatus(
             @RequestBody ReportUpdatePayload reportUpdatePayload,
             @RequestHeader(name = "Authorization") String token,
-            @PathVariable(name = "reportId") String reportId
-    ) throws InvalidRequestDataException {
+            @PathVariable(name = "reportId") String reportId) throws InvalidRequestDataException {
         Report report = reportService.update(reportId, reportUpdatePayload);
 
         return reportService.aggregate(report);
     }
 
     @GetMapping("/own/")
-    public ResponseEntity<?> getUserReports(
-            @RequestHeader(name = "Authorization") String token
-    ) {
+    public ResponseEntity<?> getUserReports(@RequestHeader(name = "Authorization") String token) {
         User user = userService.findByToken(new Token(token));
 
         if (user == null) {

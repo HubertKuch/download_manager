@@ -54,7 +54,7 @@ public class ReportService {
         report.update(reportUpdatePayload);
 
         return reportRepository.save(report);
-    };
+    }
 
     public List<Report> getUserReports(User user) {
         return reportRepository.findAllByReportingUserId(user.getId());
